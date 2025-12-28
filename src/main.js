@@ -1033,6 +1033,11 @@ async function updatePaidNamesDisplay() {
             numberLabel.classList.remove('paid-number');
           }
           
+          // Remove paid class from number item
+          if (numberItem) {
+            numberItem.classList.remove('paid');
+          }
+          
           // Re-enable checkbox
           const checkbox = document.getElementById(`num-${i}`);
           if (checkbox) {
@@ -2182,8 +2187,7 @@ function startCountdown() {
   }, 1000);
 }
 
-// Start countdown when page loads
-startCountdown();
+// Countdown only starts when autoSpinDateTime is set (after last ticket is bought)
 
 // Wrap updatePrizeInfo to restart countdown when data is updated
 const originalUpdatePrizeInfo = updatePrizeInfo;
