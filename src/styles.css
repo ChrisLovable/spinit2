@@ -433,6 +433,17 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Paid name styling - green background and text */
+.number-item input[type="text"].paid-name {
+  background: rgba(0, 255, 0, 0.15);
+  border: 1px solid rgba(0, 255, 0, 0.6);
+  color: #00FF00;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+  cursor: not-allowed;
+}
+
 .number-item input[type="text"]:focus {
   border-color: #FFD700;
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
@@ -448,25 +459,7 @@ body {
   font-size: 14px;
 }
 
-.paid-name-display {
-  color: #00FF00;
-  font-weight: bold;
-  font-size: 12px;
-  text-transform: uppercase;
-  margin-left: 4px;
-  padding: 3px 6px;
-  background: rgba(0, 255, 0, 0.1);
-  border: 1px solid rgba(0, 255, 0, 0.5);
-  border-radius: 4px;
-  text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
-  display: none;
-  flex-shrink: 1;
-  min-width: 0;
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+/* Removed .paid-name-display - now using input field with .paid-name class */
 
 .checkout-button, .admin-button {
   padding: 14px 20px;

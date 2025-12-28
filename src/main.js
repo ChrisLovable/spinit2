@@ -306,14 +306,14 @@ for (let i = 1; i <= 20; i++) {
   nameInput.type = 'text';
   nameInput.placeholder = 'Enter name...';
   nameInput.id = `name-${i}`;
-  
-  // Paid name display (green, uppercase)
-  const paidNameDisplay = document.createElement('span');
-  paidNameDisplay.className = 'paid-name-display';
-  paidNameDisplay.id = `paid-name-${i}`;
-  paidNameDisplay.style.display = 'none';
+  nameInput.dataset.number = i; // Store number for easy lookup
   
   checkbox.addEventListener('change', (e) => {
+    // Don't allow checking if this number is already paid
+    if (e.target.checked && nameInput.classList.contains('paid-name')) {
+      e.target.checked = false;
+      return;
+    }
     if (e.target.checked) {
       selectedNumbers.set(i, nameInput.value || '');
     } else {
@@ -323,6 +323,11 @@ for (let i = 1; i <= 20; i++) {
   });
   
   nameInput.addEventListener('input', (e) => {
+    // Don't allow editing if this is a paid name
+    if (nameInput.classList.contains('paid-name')) {
+      e.target.value = nameInput.dataset.paidName || '';
+      return;
+    }
     if (checkbox.checked) {
       selectedNumbers.set(i, e.target.value);
       updateCheckoutButton();
@@ -332,7 +337,6 @@ for (let i = 1; i <= 20; i++) {
   numberItem.appendChild(checkbox);
   numberItem.appendChild(label);
   numberItem.appendChild(nameInput);
-  numberItem.appendChild(paidNameDisplay);
   numberGrid.appendChild(numberItem);
 }
 
@@ -783,20 +787,42 @@ async function updatePaidNamesDisplay() {
     
     console.log('Paid names by number:', paidNamesByNumber);
     
-    // Update display for each number
+    // Update display for each number - show paid name in the input field
     for (let i = 1; i <= 20; i++) {
-      const paidNameDisplay = document.getElementById(`paid-name-${i}`);
-      if (paidNameDisplay) {
+      const nameInput = document.getElementById(`name-${i}`);
+      if (nameInput) {
         if (paidNamesByNumber[i]) {
           const playerName = paidNamesByNumber[i].player_name || paidNamesByNumber[i].name || 'Unnamed';
-          paidNameDisplay.textContent = playerName.toUpperCase();
-          paidNameDisplay.style.display = 'inline-block';
-          console.log(`Displaying paid name for number ${i}: ${playerName.toUpperCase()}`);
+          const upperName = playerName.toUpperCase();
+          
+          // Set the paid name in the input field
+          nameInput.value = upperName;
+          nameInput.classList.add('paid-name');
+          nameInput.readOnly = true;
+          nameInput.dataset.paidName = upperName;
+          
+          // Uncheck checkbox if it was checked (can't select paid numbers)
+          const checkbox = document.getElementById(`num-${i}`);
+          if (checkbox) {
+            checkbox.checked = false;
+            checkbox.disabled = true;
+          }
+          
+          console.log(`Displaying paid name for number ${i} in input field: ${upperName}`);
         } else {
-          paidNameDisplay.style.display = 'none';
+          // Remove paid styling if not paid
+          nameInput.classList.remove('paid-name');
+          nameInput.readOnly = false;
+          delete nameInput.dataset.paidName;
+          
+          // Re-enable checkbox
+          const checkbox = document.getElementById(`num-${i}`);
+          if (checkbox) {
+            checkbox.disabled = false;
+          }
         }
       } else {
-        console.warn(`Paid name display element not found for number ${i}`);
+        console.warn(`Name input element not found for number ${i}`);
       }
     }
   } catch (error) {
