@@ -981,6 +981,8 @@ async function updatePaidNamesDisplay() {
     for (let i = 1; i <= 20; i++) {
       const nameInput = document.getElementById(`name-${i}`);
       const mobileInput = document.getElementById(`mobile-${i}`);
+      const checkbox = document.getElementById(`num-${i}`);
+      const numberItem = checkbox ? checkbox.closest('.number-item') : null;
       
       if (nameInput && mobileInput) {
         if (paidNamesByNumber[i]) {
@@ -1006,8 +1008,12 @@ async function updatePaidNamesDisplay() {
             numberLabel.classList.add('paid-number');
           }
           
+          // Add paid class to number item for styling
+          if (numberItem) {
+            numberItem.classList.add('paid');
+          }
+          
           // Uncheck checkbox if it was checked (can't select paid numbers)
-          const checkbox = document.getElementById(`num-${i}`);
           if (checkbox) {
             checkbox.checked = false;
             checkbox.disabled = true;
@@ -1039,7 +1045,6 @@ async function updatePaidNamesDisplay() {
           }
           
           // Re-enable checkbox
-          const checkbox = document.getElementById(`num-${i}`);
           if (checkbox) {
             checkbox.disabled = false;
           }
