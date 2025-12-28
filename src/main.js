@@ -25,8 +25,12 @@ const supabase = supabaseUrl && supabaseAnonKey
 async function testSupabaseConnection() {
   if (!supabase) {
     console.error('❌ Supabase client not initialized - check environment variables');
+    console.error('   VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'MISSING');
+    console.error('   VITE_SUPABASE_ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'MISSING');
     return false;
   }
+  
+  console.log('🔍 Testing Supabase connection and INSERT capability...');
 
   console.log('🔍 Testing Supabase connection...');
 
