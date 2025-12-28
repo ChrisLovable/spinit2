@@ -1792,6 +1792,65 @@ async function loadCompletedCompetitions() {
       }
     }
     
+    // Add dummy data for testing
+    const dummyCompetitions = [
+      {
+        id: 'dummy-1',
+        title: 'Summer Prize Draw 2024',
+        description: 'Win a brand new iPhone 15 Pro Max!',
+        photo: null,
+        prize_value: 15000.00,
+        ticket_price: 50.00,
+        winning_number: 7,
+        winner_name: 'JOHN SMITH',
+        spin_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), // 5 days ago
+        status: 'completed',
+        created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'dummy-2',
+        title: 'Holiday Cash Giveaway',
+        description: 'R10,000 cash prize for the lucky winner!',
+        photo: null,
+        prize_value: 10000.00,
+        ticket_price: 50.00,
+        winning_number: 15,
+        winner_name: 'SARAH JOHNSON',
+        spin_date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(), // 12 days ago
+        status: 'completed',
+        created_at: new Date(Date.now() - 18 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'dummy-3',
+        title: 'Tech Gadgets Competition',
+        description: 'MacBook Pro 16" M3 Max - Ultimate prize!',
+        photo: null,
+        prize_value: 35000.00,
+        ticket_price: 50.00,
+        winning_number: 3,
+        winner_name: 'MIKE WILLIAMS',
+        spin_date: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(), // 20 days ago
+        status: 'completed',
+        created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString()
+      },
+      {
+        id: 'dummy-4',
+        title: 'Weekend Getaway Prize',
+        description: 'All-expenses paid trip to Cape Town!',
+        photo: null,
+        prize_value: 8000.00,
+        ticket_price: 50.00,
+        winning_number: 19,
+        winner_name: 'LISA ANDERSON',
+        spin_date: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days ago
+        status: 'completed',
+        created_at: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString()
+      }
+    ];
+    
+    // Add dummy competitions to the list
+    completedComps.push(...dummyCompetitions);
+    
     // Display completed competitions
     displayCompletedCompetitions(completedComps);
   } catch (error) {
