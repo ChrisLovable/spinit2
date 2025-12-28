@@ -70,6 +70,7 @@
       </div>
       <button id="checkoutButton" class="checkout-button">CHECKOUT</button>
       <button id="adminButton" class="admin-button">ADMIN</button>
+      <button id="completedButton" class="completed-button">COMPLETED COMPETITIONS</button>
     </div>
   </div>
 
@@ -128,6 +129,19 @@
         <button id="passwordCancel" class="password-cancel-button">CANCEL</button>
       </div>
       <div id="passwordError" class="password-error"></div>
+    </div>
+  </div>
+
+  <!-- Completed Competitions Modal -->
+  <div id="completedModal" class="completed-modal">
+    <div class="completed-modal-content">
+      <div class="completed-modal-header">
+        <h2>Completed Competitions</h2>
+        <button class="completed-modal-close" id="completedModalClose">&times;</button>
+      </div>
+      <div id="completedCompetitionsList" class="completed-competitions-list">
+        <div class="loading-message">Loading completed competitions...</div>
+      </div>
     </div>
   </div>
 

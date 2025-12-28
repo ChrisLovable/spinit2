@@ -321,6 +321,7 @@ console.log("Wheel scale:", themeParkWheel.group.scale);
 const spinButton = document.getElementById('spinButton');
 const checkoutButton = document.getElementById('checkoutButton');
 const adminButton = document.getElementById('adminButton');
+const completedButton = document.getElementById('completedButton');
 const numberGrid = document.getElementById('numberGrid');
 
 // Generate number selection UI (1-20)
@@ -1066,6 +1067,39 @@ adminButton.addEventListener('click', () => {
   adminPasswordInput.focus();
 });
 
+// Completed Competitions Modal Elements
+const completedModal = document.getElementById('completedModal');
+const completedModalClose = document.getElementById('completedModalClose');
+const completedCompetitionsList = document.getElementById('completedCompetitionsList');
+
+// Completed button handler
+if (completedButton) {
+  completedButton.addEventListener('click', () => {
+    if (completedModal) {
+      completedModal.classList.add('active');
+      loadCompletedCompetitions();
+    }
+  });
+}
+
+// Close completed modal
+if (completedModalClose) {
+  completedModalClose.addEventListener('click', () => {
+    if (completedModal) {
+      completedModal.classList.remove('active');
+    }
+  });
+}
+
+// Close modal when clicking outside
+if (completedModal) {
+  completedModal.addEventListener('click', (e) => {
+    if (e.target === completedModal) {
+      completedModal.classList.remove('active');
+    }
+  });
+}
+
 // Password modal handlers
 passwordSubmit.addEventListener('click', () => {
   const enteredPassword = adminPasswordInput.value;
@@ -1595,6 +1629,145 @@ async function isCompetitionActive(competitionId) {
     console.error('Error checking competition status:', error);
     return true; // Default to active if error
   }
+}
+
+// Load completed competitions (has winner or all numbers bought)
+async function loadCompletedCompetitions() {
+  try {
+    if (!completedCompetitionsList) return;
+    completedCompetitionsList.innerHTML = '<div class="loading-message">Loading completed competitions...</div>';
+    
+    let competitions = [];
+    
+    // Load from Supabase if available
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('competitions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        competitions = data;
+      }
+    } else {
+      // Fallback: use localStorage
+      const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+      const winningResults = JSON.parse(localStorage.getItem('winningResults') || '[]');
+      
+      if (prizeData.title && winningResults.length > 0) {
+        competitions = [{
+          ...prizeData,
+          id: prizeData.competition_id || 'temp',
+          winning_number: winningResults[winningResults.length - 1]?.winning_number,
+          winner_name: winningResults[winningResults.length - 1]?.winner_name
+        }];
+      }
+    }
+    
+    // Filter to completed competitions (has winner OR all 20 numbers bought)
+    const completedComps = [];
+    for (const comp of competitions) {
+      const hasWinner = comp.winning_number && comp.winner_name;
+      const isFullyBought = await !isCompetitionActive(comp.id);
+      
+      if (hasWinner || isFullyBought) {
+        // Get winner info if not already set
+        let winnerNumber = comp.winning_number;
+        let winnerName = comp.winner_name;
+        let spinDate = comp.updated_at || comp.created_at;
+        
+        if (!winnerNumber || !winnerName) {
+          // Try to get from entries
+          const winnerInfo = await getWinnerInfo(comp.id);
+          if (winnerInfo) {
+            winnerNumber = winnerInfo.number;
+            winnerName = winnerInfo.name;
+          }
+        }
+        
+        completedComps.push({
+          ...comp,
+          winning_number: winnerNumber,
+          winner_name: winnerName,
+          spin_date: spinDate
+        });
+      }
+    }
+    
+    // Display completed competitions
+    displayCompletedCompetitions(completedComps);
+  } catch (error) {
+    console.error('Error loading completed competitions:', error);
+    if (completedCompetitionsList) {
+      completedCompetitionsList.innerHTML = '<div class="error-message">Error loading completed competitions</div>';
+    }
+  }
+}
+
+// Get winner info for a competition
+async function getWinnerInfo(competitionId) {
+  try {
+    // Get winning results from localStorage (since we're not using spin_results table)
+    const winningResults = JSON.parse(localStorage.getItem('winningResults') || '[]');
+    const result = winningResults.find(r => 
+      (!competitionId || r.competition_id === competitionId || !r.competition_id)
+    );
+    
+    if (result && result.winning_number && result.winner_name) {
+      return {
+        number: result.winning_number,
+        name: result.winner_name
+      };
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error getting winner info:', error);
+    return null;
+  }
+}
+
+// Display completed competitions as cards
+function displayCompletedCompetitions(competitions) {
+  if (!completedCompetitionsList) return;
+  
+  if (competitions.length === 0) {
+    completedCompetitionsList.innerHTML = '<div class="no-completions">No completed competitions yet</div>';
+    return;
+  }
+  
+  completedCompetitionsList.innerHTML = '';
+  
+  competitions.forEach(comp => {
+    const card = document.createElement('div');
+    card.className = 'completed-competition-card';
+    
+    const spinDate = comp.spin_date ? new Date(comp.spin_date) : (comp.updated_at ? new Date(comp.updated_at) : new Date(comp.created_at));
+    const dateStr = formatDate(spinDate);
+    const timeStr = formatTime(spinDate);
+    
+    card.innerHTML = `
+      <div class="completed-card-header">
+        <h3 class="completed-card-title">${comp.title || 'Competition'}</h3>
+        <div class="completed-card-date">Spin Date: ${dateStr} @ ${timeStr}</div>
+      </div>
+      ${comp.photo ? `<div class="completed-card-photo"><img src="${comp.photo}" alt="Prize" /></div>` : ''}
+      <div class="completed-card-description">${comp.description || 'No description'}</div>
+      <div class="completed-card-details">
+        <div class="completed-card-value">Value: $${(comp.prize_value || 0).toFixed(2)}</div>
+        <div class="completed-card-price">Ticket Price: $${(comp.ticket_price || 0).toFixed(2)}</div>
+      </div>
+      ${comp.winning_number && comp.winner_name ? `
+        <div class="completed-card-winner">
+          <div class="winner-label">WINNER</div>
+          <div class="winner-number">Number: ${comp.winning_number}</div>
+          <div class="winner-name">${comp.winner_name.toUpperCase()}</div>
+        </div>
+      ` : '<div class="completed-card-winner">No winner recorded</div>'}
+    `;
+    
+    completedCompetitionsList.appendChild(card);
+  });
 }
 
 // Countdown Timer Functions
