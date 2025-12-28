@@ -1691,16 +1691,25 @@ async function checkAndScheduleAutoSpin(competitionId) {
       autoSpinDateTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       
       console.log('⏰ Starting 10-minute countdown. Auto-spin scheduled for:', autoSpinDateTime);
+      console.log('⏰ Current time:', new Date());
+      console.log('⏰ Time difference:', (autoSpinDateTime - new Date()) / 1000, 'seconds');
       
       // Ensure countdown timer is visible
       const countdownTimer = document.getElementById('countdownTimer');
       if (countdownTimer) {
         countdownTimer.style.display = 'block';
+        console.log('✅ Countdown timer made visible');
+      } else {
+        console.error('❌ Countdown timer element not found!');
       }
       
       // Update countdown to show auto-spin time immediately
       updateAutoSpinCountdown();
-      startCountdown(); // Restart countdown to show auto-spin time
+      
+      // Restart countdown interval to show auto-spin time
+      startCountdown();
+      
+      console.log('✅ Countdown started and should be visible');
       
       // Set timer to auto-spin
       autoSpinTimer = setTimeout(() => {
