@@ -1119,36 +1119,45 @@ function loadAndDisplayPaidPlayers() {
   }
 }
 
-// Checkout button handler - show/hide PayPal buttons
+// Checkout button handler - replace with PayPal button and auto-show
 checkoutButton.addEventListener('click', () => {
   if (selectedNumbers.size === 0) {
     alert('Please select at least one number before checkout.');
     return;
   }
   
-  // Get ticket price from admin panel
-  const ticketPrice = getTicketPriceFromAdmin();
-  const quantity = selectedNumbers.size;
-  const total = ticketPrice * quantity;
-  
-  // Show confirmation
-  const confirmMessage = `Checkout:\n\n` +
-    `Selected Numbers: ${quantity}\n` +
-    `Price per Ticket: R${ticketPrice.toFixed(2)}\n` +
-    `Total: R${total.toFixed(2)}\n\n` +
-    `Proceed to PayPal payment?`;
-  
-  if (confirm(confirmMessage)) {
-    // Initialize and show PayPal buttons
-    if (!paypalButtonsContainer || !document.getElementById('paypal-button-container')) {
-      initializePayPal();
-    } else {
-      // Re-initialize to update price if it changed
-      initializePayPal();
-      // Scroll to PayPal buttons
-      paypalButtonsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Validate all selected numbers have both name and mobile number
+  for (const [num, data] of selectedNumbers.entries()) {
+    const nameInput = document.getElementById(`name-${num}`);
+    const mobileInput = document.getElementById(`mobile-${num}`);
+    const name = nameInput ? nameInput.value.trim() : (data?.name || '');
+    const mobile = mobileInput ? mobileInput.value.trim() : (data?.mobile || '');
+    
+    if (!name || !name.trim()) {
+      alert(`Please enter a name for number ${num}. Name is required.`);
+      nameInput?.focus();
+      return;
+    }
+    
+    if (!mobile || !mobile.trim()) {
+      alert(`Please enter a mobile number for number ${num}. Mobile number is required.`);
+      mobileInput?.focus();
+      return;
     }
   }
+  
+  // Hide checkout button and show PayPal button
+  checkoutButton.style.display = 'none';
+  
+  // Initialize PayPal - it will replace the checkout button
+  initializePayPal();
+  
+  // Scroll to PayPal button after it renders
+  setTimeout(() => {
+    if (paypalButtonsContainer) {
+      paypalButtonsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, 500);
 });
 
 // Initialize PayPal when page loads (after a delay to ensure SDK is loaded)
