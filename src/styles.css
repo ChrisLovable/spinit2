@@ -498,7 +498,7 @@ body {
   padding: 14px 20px;
   font-size: 16px;
   font-weight: bold;
-  color: #00FF00;
+  color: #000000;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -630,7 +630,7 @@ body {
   padding: 14px 35px;
   font-size: 18px;
   font-weight: bold;
-  color: #00FF00;
+  color: #000000;
   background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 30px;
