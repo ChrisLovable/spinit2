@@ -404,10 +404,15 @@ for (let i = 1; i <= 20; i++) {
     }
   });
   
+  // Create a container for name and mobile (vertical layout)
+  const nameMobileContainer = document.createElement('div');
+  nameMobileContainer.className = 'name-mobile-container';
+  nameMobileContainer.appendChild(nameInput);
+  nameMobileContainer.appendChild(mobileInput);
+  
   numberItem.appendChild(checkbox);
   numberItem.appendChild(label);
-  numberItem.appendChild(nameInput);
-  numberItem.appendChild(mobileInput);
+  numberItem.appendChild(nameMobileContainer);
   numberGrid.appendChild(numberItem);
 }
 
@@ -423,10 +428,17 @@ function updateCheckoutButton() {
     }
   }
   
-  checkoutButton.textContent = count > 0 
-    ? `CHECKOUT (${count} selected)` 
-    : 'CHECKOUT';
-  checkoutButton.disabled = count === 0 || !allValid;
+  // Update PayPal button visibility instead of checkout button
+  if (paypalButtonsContainer) {
+    if (count === 0 || !allValid) {
+      paypalButtonsContainer.style.display = 'none';
+    } else {
+      paypalButtonsContainer.style.display = 'block';
+    }
+  }
+  
+  // Keep checkout button hidden (it's replaced by PayPal)
+  checkoutButton.style.display = 'none';
 }
 
 // Get ticket price from admin panel (displayed value)
