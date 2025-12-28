@@ -2201,8 +2201,11 @@ function showWinningNumber(number) {
   }, 5000);
 }
 
-// Initialize checkout button state
-updateCheckoutButton();
+// Initialize checkout button state - hidden until numbers are selected
+if (checkoutButton) {
+  checkoutButton.style.display = 'none';
+  updateCheckoutButton();
+}
 
 // Spin state
 let currentSpinNumber = null;
