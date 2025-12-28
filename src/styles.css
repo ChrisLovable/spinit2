@@ -8,13 +8,15 @@
 body {
   font-family: 'Arial', sans-serif;
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  overflow: hidden; /* Prevent body scroll - #app will handle scrolling */
-  height: 100vh;
+  overflow-y: auto; /* Allow body to scroll on mobile */
+  overflow-x: hidden;
+  min-height: 100vh;
   margin: 0;
   padding: 10px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Mobile-first phone container */
@@ -33,8 +35,8 @@ body {
   flex-direction: column;
   gap: 0; /* Reset gap, use margin-top on each component */
   padding: 12px;
-  height: 100vh; /* Full viewport height */
-  max-height: 100vh; /* Prevent overflow */
+  min-height: 100vh; /* Allow content to expand */
+  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Spin Button Container - First */
