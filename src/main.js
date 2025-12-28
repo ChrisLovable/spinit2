@@ -94,6 +94,40 @@ async function testSupabaseConnection() {
 
     console.log('✅ INSERT operation successful');
     console.log('   Created test competition with ID:', insertData.id);
+    
+    // Test INSERT into user_entries table
+    console.log('📊 Test 6: Testing INSERT into user_entries table...');
+    const testEntry = {
+      entry_number: 1,
+      player_name: 'Test Entry',
+      payment_status: 'completed',
+      competition_id: null
+    };
+    
+    const { data: entryData, error: entryError } = await supabase
+      .from('user_entries')
+      .insert(testEntry)
+      .select()
+      .single();
+    
+    if (entryError) {
+      console.error('❌ user_entries INSERT test failed:', entryError.message);
+      console.error('   Error code:', entryError.code);
+      console.error('   Error details:', entryError.details);
+      console.error('   Error hint:', entryError.hint);
+      console.error('   ⚠️ THIS IS WHY PAYMENTS ARE NOT SAVING!');
+      console.error('   ⚠️ Run the COMPLETE_DATABASE_SETUP.sql file in Supabase SQL Editor!');
+    } else {
+      console.log('✅ user_entries INSERT test successful!');
+      console.log('   Created test entry with ID:', entryData.id);
+      
+      // Clean up test entry
+      await supabase
+        .from('user_entries')
+        .delete()
+        .eq('id', entryData.id);
+      console.log('   Test entry cleaned up');
+    }
 
     // Clean up: Delete the test competition
     if (insertData?.id) {
