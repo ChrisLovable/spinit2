@@ -1608,11 +1608,18 @@ async function loadActiveCompetitions() {
       }
     }
     
-    // Populate dropdown
+    // Populate dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
     if (activeCompetitions.length === 0) {
       competitionSelect.innerHTML = '<option value="">No active competitions</option>';
     } else {
+      // Sort by title alphabetically
+      activeCompetitions.sort((a, b) => {
+        const titleA = (a.title || '').toLowerCase();
+        const titleB = (b.title || '').toLowerCase();
+        return titleA.localeCompare(titleB);
+      });
+      
       activeCompetitions.forEach(comp => {
         const option = document.createElement('option');
         option.value = comp.id;
