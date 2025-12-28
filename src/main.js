@@ -998,6 +998,12 @@ async function updatePaidNamesDisplay() {
           mobileInput.readOnly = true;
           mobileInput.dataset.paidMobile = playerMobile;
           
+          // Make the number label green
+          const numberLabel = document.querySelector(`label[for="num-${i}"]`);
+          if (numberLabel) {
+            numberLabel.classList.add('paid-number');
+          }
+          
           // Uncheck checkbox if it was checked (can't select paid numbers)
           const checkbox = document.getElementById(`num-${i}`);
           if (checkbox) {

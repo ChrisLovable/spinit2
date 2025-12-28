@@ -484,7 +484,12 @@ body {
   max-width: 25px;
   text-align: center;
   flex-shrink: 0;
-  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.number-item label.paid-number {
+  color: #00FF00;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
 }
 
 /* Removed .paid-name-display - now using input field with .paid-name class */
