@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS competitions (
 -- User entries table (stores payment/entry data)
 CREATE TABLE IF NOT EXISTS user_entries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    competition_id UUID REFERENCES competitions(id) ON DELETE CASCADE,
+    competition_id UUID REFERENCES competitions(id) ON DELETE CASCADE, -- NULL allowed for temp competitions
     entry_number INTEGER NOT NULL CHECK (entry_number >= 1 AND entry_number <= 20),
     player_name VARCHAR(255) NOT NULL,
     payment_transaction_id VARCHAR(255),
@@ -32,6 +32,21 @@ CREATE TABLE IF NOT EXISTS user_entries (
     payment_completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Ensure competition_id allows NULL (in case table already exists)
+-- This is safe to run multiple times
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 
+        FROM information_schema.columns 
+        WHERE table_name = 'user_entries' 
+        AND column_name = 'competition_id'
+        AND is_nullable = 'NO'
+    ) THEN
+        ALTER TABLE user_entries ALTER COLUMN competition_id DROP NOT NULL;
+    END IF;
+END $$;
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_competitions_status ON competitions(status);
