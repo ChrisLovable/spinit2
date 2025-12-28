@@ -436,6 +436,20 @@ body {
   text-align: center;
 }
 
+.paid-name-display {
+  color: #00FF00;
+  font-weight: bold;
+  font-size: 14px;
+  text-transform: uppercase;
+  margin-left: 8px;
+  padding: 4px 8px;
+  background: rgba(0, 255, 0, 0.1);
+  border: 1px solid rgba(0, 255, 0, 0.5);
+  border-radius: 4px;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+  display: none;
+}
+
 .checkout-button, .admin-button {
   padding: 14px 20px;
   font-size: 16px;
@@ -964,6 +978,73 @@ body {
   text-align: center;
   padding: 20px;
   font-style: italic;
+}
+
+/* Payment Success Message */
+.payment-success-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  z-index: 10000;
+  background: linear-gradient(135deg, rgba(0, 255, 0, 0.95) 0%, rgba(0, 200, 0, 0.95) 100%);
+  border: 3px solid #00FF00;
+  border-radius: 15px;
+  padding: 20px 30px;
+  box-shadow: 
+    0 10px 40px rgba(0, 255, 0, 0.5),
+    0 0 30px rgba(0, 255, 0, 0.8),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
+  min-width: 280px;
+  max-width: 90%;
+  opacity: 0;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.payment-success-message.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.success-content {
+  text-align: center;
+  color: #000;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  animation: successPulse 1s ease-in-out infinite;
+}
+
+.success-title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.success-details {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.success-details div {
+  margin: 4px 0;
+}
+
+@keyframes successPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 /* Mobile adjustments for paid players */

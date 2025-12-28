@@ -313,6 +313,7 @@ const selectedNumbers = new Map(); // Store selected numbers with names
 for (let i = 1; i <= 20; i++) {
   const numberItem = document.createElement('div');
   numberItem.className = 'number-item';
+  numberItem.dataset.number = i; // Store number for easy lookup
   
   const checkbox = document.createElement('input');
   checkbox.type = 'checkbox';
@@ -327,6 +328,12 @@ for (let i = 1; i <= 20; i++) {
   nameInput.type = 'text';
   nameInput.placeholder = 'Enter name...';
   nameInput.id = `name-${i}`;
+  
+  // Paid name display (green, uppercase)
+  const paidNameDisplay = document.createElement('span');
+  paidNameDisplay.className = 'paid-name-display';
+  paidNameDisplay.id = `paid-name-${i}`;
+  paidNameDisplay.style.display = 'none';
   
   checkbox.addEventListener('change', (e) => {
     if (e.target.checked) {
@@ -347,6 +354,7 @@ for (let i = 1; i <= 20; i++) {
   numberItem.appendChild(checkbox);
   numberItem.appendChild(label);
   numberItem.appendChild(nameInput);
+  numberItem.appendChild(paidNameDisplay);
   numberGrid.appendChild(numberItem);
 }
 
@@ -516,12 +524,11 @@ function initializePayPal() {
         // Display all paid players (including new ones) - visible to everyone
         displayAllPaidPlayers();
         
-        // Show success message
-        const selections = Array.from(selectedNumbers.entries())
-          .map(([num, name]) => `Number ${num}: ${name || 'Unnamed'}`)
-          .join('\n');
+        // Update paid names display next to numbers
+        updatePaidNamesDisplay();
         
-        alert(`Payment completed ✅\n\nTransaction ID: ${details.id}\nAmount: R${paymentData.amount.toFixed(2)}\n\nSelected Numbers:\n${selections}`);
+        // Show success message
+        showPaymentSuccessMessage(paymentData, details);
         
         // Clear selections
         selectedNumbers.clear();
@@ -699,6 +706,80 @@ async function savePaymentToDatabase(paymentData, competitionId) {
     console.error('Error saving payment to database:', error);
     return { success: false, error: error.message };
   }
+}
+
+// Update paid names display next to numbers
+function updatePaidNamesDisplay() {
+  try {
+    // Get all paid entries from database/localStorage
+    const allPaidEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+    
+    // Filter only completed payments for current competition
+    const currentCompetitionId = JSON.parse(localStorage.getItem('prizeData') || '{}').competition_id;
+    const currentCompetitionEntries = allPaidEntries.filter(entry => 
+      entry.payment_status === 'completed' && 
+      (!currentCompetitionId || entry.competition_id === currentCompetitionId || !entry.competition_id)
+    );
+    
+    // Group by number - get the most recent name for each number
+    const paidNamesByNumber = {};
+    currentCompetitionEntries.forEach(entry => {
+      const num = entry.entry_number || entry.number;
+      const playerName = entry.player_name || entry.name || 'Unnamed';
+      // Keep the most recent entry for each number
+      if (!paidNamesByNumber[num] || new Date(entry.created_at || entry.payment_completed_at) > new Date(paidNamesByNumber[num].created_at || paidNamesByNumber[num].payment_completed_at)) {
+        paidNamesByNumber[num] = entry;
+      }
+    });
+    
+    // Update display for each number
+    for (let i = 1; i <= 20; i++) {
+      const paidNameDisplay = document.getElementById(`paid-name-${i}`);
+      if (paidNameDisplay && paidNamesByNumber[i]) {
+        const playerName = paidNamesByNumber[i].player_name || paidNamesByNumber[i].name || 'Unnamed';
+        paidNameDisplay.textContent = playerName.toUpperCase();
+        paidNameDisplay.style.display = 'inline-block';
+      } else if (paidNameDisplay) {
+        paidNameDisplay.style.display = 'none';
+      }
+    }
+  } catch (error) {
+    console.error('Error updating paid names display:', error);
+  }
+}
+
+// Show payment success message
+function showPaymentSuccessMessage(paymentData, details) {
+  // Create success message element
+  const successMessage = document.createElement('div');
+  successMessage.className = 'payment-success-message';
+  successMessage.innerHTML = `
+    <div class="success-content">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Payment Successful!</div>
+      <div class="success-details">
+        <div>Amount: R${paymentData.amount.toFixed(2)}</div>
+        <div>Transaction: ${details.id.substring(0, 20)}...</div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(successMessage);
+  
+  // Show with animation
+  setTimeout(() => {
+    successMessage.classList.add('active');
+  }, 10);
+  
+  // Auto-hide after 5 seconds
+  setTimeout(() => {
+    successMessage.classList.remove('active');
+    setTimeout(() => {
+      if (successMessage.parentNode) {
+        successMessage.parentNode.removeChild(successMessage);
+      }
+    }, 300);
+  }, 5000);
 }
 
 // Display all paid players (visible to everyone)
@@ -1159,6 +1240,8 @@ loadPrizeData();
 
 // Load and display all paid players when page loads (visible to everyone)
 loadAndDisplayPaidPlayers();
+// Update paid names display on page load
+updatePaidNamesDisplay();
 
 // Countdown Timer Functions
 let countdownInterval = null;
