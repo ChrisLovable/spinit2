@@ -1675,7 +1675,15 @@ async function checkAndScheduleAutoSpin(competitionId) {
       // Schedule spin for 10 minutes from now
       autoSpinDateTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       
-      // Update countdown to show auto-spin time
+      console.log('⏰ Starting 10-minute countdown. Auto-spin scheduled for:', autoSpinDateTime);
+      
+      // Ensure countdown timer is visible
+      const countdownTimer = document.getElementById('countdownTimer');
+      if (countdownTimer) {
+        countdownTimer.style.display = 'block';
+      }
+      
+      // Update countdown to show auto-spin time immediately
       updateAutoSpinCountdown();
       startCountdown(); // Restart countdown to show auto-spin time
       
