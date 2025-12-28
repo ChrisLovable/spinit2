@@ -496,6 +496,17 @@ function initializePayPal() {
         // Payment successful
         console.log('Payment completed:', details);
         
+        // Get current names from input fields (in case Map is out of sync)
+        const selectedNumbersWithNames = Array.from(selectedNumbers.entries()).map(([num, name]) => {
+          // Double-check by reading from the actual input field
+          const nameInput = document.getElementById(`name-${num}`);
+          const actualName = nameInput ? nameInput.value.trim() : (name || '');
+          return {
+            number: num,
+            name: actualName || 'Unnamed'
+          };
+        });
+        
         // Prepare payment data for database
         const paymentData = {
           transaction_id: details.id,
@@ -504,14 +515,13 @@ function initializePayPal() {
           amount: parseFloat(details.purchase_units[0].amount.value),
           currency: details.purchase_units[0].amount.currency_code,
           status: details.status,
-          selected_numbers: Array.from(selectedNumbers.entries()).map(([num, name]) => ({
-            number: num,
-            name: name || 'Unnamed'
-          })),
+          selected_numbers: selectedNumbersWithNames,
           ticket_price: ticketPrice,
           quantity: quantity,
           timestamp: new Date().toISOString()
         };
+        
+        console.log('Payment data prepared:', paymentData);
         
         // Save to localStorage (temporary until DB is connected)
         try {
@@ -527,13 +537,16 @@ function initializePayPal() {
         const competitionId = await getOrCreateCompetitionId();
         
         // Save to database (Supabase or localStorage)
-        await savePaymentToDatabase(paymentData, competitionId);
+        const saveResult = await savePaymentToDatabase(paymentData, competitionId);
+        console.log('Save result:', saveResult);
         
         // Display all paid players (including new ones) - visible to everyone
         displayAllPaidPlayers();
         
-        // Update paid names display next to numbers
-        updatePaidNamesDisplay();
+        // Update paid names display next to numbers (with small delay to ensure DB save completes)
+        setTimeout(() => {
+          updatePaidNamesDisplay();
+        }, 100);
         
         // Show success message
         showPaymentSuccessMessage(paymentData, details);
@@ -690,24 +703,43 @@ async function savePaymentToDatabase(paymentData, competitionId) {
       created_at: paymentData.timestamp
     }));
     
-    // TODO: Save to Supabase when connected
-    // const { data, error } = await supabase
-    //   .from('user_entries')
-    //   .insert(entries);
-    // 
-    // if (error) {
-    //   console.error('Error saving to database:', error);
-    //   throw error;
-    // }
-    // 
-    // console.log('Payment saved to database:', data);
-    
-    // For now, save to localStorage
-    const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
-    existingEntries.push(...entries);
-    localStorage.setItem('user_entries', JSON.stringify(existingEntries));
-    
-    console.log('Payment entries saved (localStorage):', entries);
+    // Save to Supabase if available
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('user_entries')
+          .insert(entries)
+          .select();
+        
+        if (error) {
+          console.error('Error saving to Supabase:', error);
+          // Fall back to localStorage if Supabase fails
+          const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+          existingEntries.push(...entries);
+          localStorage.setItem('user_entries', JSON.stringify(existingEntries));
+          console.log('Payment entries saved to localStorage (fallback):', entries);
+        } else {
+          console.log('Payment entries saved to Supabase:', data);
+          // Also save to localStorage as backup
+          const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+          existingEntries.push(...entries);
+          localStorage.setItem('user_entries', JSON.stringify(existingEntries));
+        }
+      } catch (supabaseError) {
+        console.error('Supabase save error:', supabaseError);
+        // Fall back to localStorage
+        const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+        existingEntries.push(...entries);
+        localStorage.setItem('user_entries', JSON.stringify(existingEntries));
+        console.log('Payment entries saved to localStorage (fallback):', entries);
+      }
+    } else {
+      // No Supabase, save to localStorage only
+      const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+      existingEntries.push(...entries);
+      localStorage.setItem('user_entries', JSON.stringify(existingEntries));
+      console.log('Payment entries saved (localStorage only):', entries);
+    }
     
     return { success: true, entries };
   } catch (error) {
@@ -717,38 +749,74 @@ async function savePaymentToDatabase(paymentData, competitionId) {
 }
 
 // Update paid names display next to numbers
-function updatePaidNamesDisplay() {
+async function updatePaidNamesDisplay() {
   try {
-    // Get all paid entries from database/localStorage
-    const allPaidEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+    // Get all paid entries - try Supabase first, then localStorage
+    let allPaidEntries = [];
+    
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('user_entries')
+          .select('*')
+          .eq('payment_status', 'completed');
+        
+        if (!error && data) {
+          allPaidEntries = data;
+          console.log('Loaded paid entries from Supabase:', allPaidEntries.length);
+        } else {
+          console.warn('Error loading from Supabase, using localStorage:', error);
+          allPaidEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+        }
+      } catch (err) {
+        console.warn('Supabase load error, using localStorage:', err);
+        allPaidEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+      }
+    } else {
+      allPaidEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+    }
+    
+    console.log('Total paid entries found:', allPaidEntries.length);
     
     // Filter only completed payments for current competition
     const currentCompetitionId = JSON.parse(localStorage.getItem('prizeData') || '{}').competition_id;
-    const currentCompetitionEntries = allPaidEntries.filter(entry => 
-      entry.payment_status === 'completed' && 
-      (!currentCompetitionId || entry.competition_id === currentCompetitionId || !entry.competition_id)
-    );
+    const currentCompetitionEntries = allPaidEntries.filter(entry => {
+      const isCompleted = entry.payment_status === 'completed';
+      const matchesCompetition = !currentCompetitionId || entry.competition_id === currentCompetitionId || !entry.competition_id;
+      return isCompleted && matchesCompetition;
+    });
+    
+    console.log('Filtered entries for current competition:', currentCompetitionEntries.length);
     
     // Group by number - get the most recent name for each number
     const paidNamesByNumber = {};
     currentCompetitionEntries.forEach(entry => {
       const num = entry.entry_number || entry.number;
-      const playerName = entry.player_name || entry.name || 'Unnamed';
-      // Keep the most recent entry for each number
-      if (!paidNamesByNumber[num] || new Date(entry.created_at || entry.payment_completed_at) > new Date(paidNamesByNumber[num].created_at || paidNamesByNumber[num].payment_completed_at)) {
-        paidNamesByNumber[num] = entry;
+      if (num) {
+        const playerName = entry.player_name || entry.name || 'Unnamed';
+        // Keep the most recent entry for each number
+        if (!paidNamesByNumber[num] || new Date(entry.created_at || entry.payment_completed_at || 0) > new Date(paidNamesByNumber[num].created_at || paidNamesByNumber[num].payment_completed_at || 0)) {
+          paidNamesByNumber[num] = entry;
+        }
       }
     });
+    
+    console.log('Paid names by number:', paidNamesByNumber);
     
     // Update display for each number
     for (let i = 1; i <= 20; i++) {
       const paidNameDisplay = document.getElementById(`paid-name-${i}`);
-      if (paidNameDisplay && paidNamesByNumber[i]) {
-        const playerName = paidNamesByNumber[i].player_name || paidNamesByNumber[i].name || 'Unnamed';
-        paidNameDisplay.textContent = playerName.toUpperCase();
-        paidNameDisplay.style.display = 'inline-block';
-      } else if (paidNameDisplay) {
-        paidNameDisplay.style.display = 'none';
+      if (paidNameDisplay) {
+        if (paidNamesByNumber[i]) {
+          const playerName = paidNamesByNumber[i].player_name || paidNamesByNumber[i].name || 'Unnamed';
+          paidNameDisplay.textContent = playerName.toUpperCase();
+          paidNameDisplay.style.display = 'inline-block';
+          console.log(`Displaying paid name for number ${i}: ${playerName.toUpperCase()}`);
+        } else {
+          paidNameDisplay.style.display = 'none';
+        }
+      } else {
+        console.warn(`Paid name display element not found for number ${i}`);
       }
     }
   } catch (error) {
