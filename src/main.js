@@ -475,21 +475,27 @@ function getTicketPriceFromAdmin() {
 }
 
 // Initialize PayPal
-let paypalButtonsContainer = null;
+// Initialize PayPal container from HTML or create it
+let paypalButtonsContainer = document.getElementById('paypal-button-container');
 
 function initializePayPal() {
-  // Remove existing PayPal buttons if any
-  if (paypalButtonsContainer) {
-    paypalButtonsContainer.remove();
+  // Get or create container for PayPal buttons
+  if (!paypalButtonsContainer) {
+    paypalButtonsContainer = document.getElementById('paypal-button-container');
   }
   
-  // Create container for PayPal buttons
-  paypalButtonsContainer = document.createElement('div');
-  paypalButtonsContainer.id = 'paypal-button-container';
-  paypalButtonsContainer.style.cssText = 'margin-top: 20px; max-width: 500px; margin-left: auto; margin-right: auto;';
-  
-  // Insert after checkout button
-  checkoutButton.parentNode.insertBefore(paypalButtonsContainer, checkoutButton.nextSibling);
+  if (!paypalButtonsContainer) {
+    // Create container if it doesn't exist in HTML
+    paypalButtonsContainer = document.createElement('div');
+    paypalButtonsContainer.id = 'paypal-button-container';
+    paypalButtonsContainer.style.cssText = 'margin-top: 20px; max-width: 500px; margin-left: auto; margin-right: auto;';
+    // Insert after checkout button
+    checkoutButton.parentNode.insertBefore(paypalButtonsContainer, checkoutButton.nextSibling);
+  } else {
+    // Clear existing buttons
+    paypalButtonsContainer.innerHTML = '';
+    paypalButtonsContainer.style.cssText = 'margin-top: 20px; max-width: 500px; margin-left: auto; margin-right: auto;';
+  }
   
   // Wait for PayPal SDK to load
   if (typeof paypal === 'undefined') {
