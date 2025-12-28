@@ -513,8 +513,8 @@ body {
   position: relative;
   overflow: hidden;
   display: block; /* Ensure button is visible by default */
-  /* 3D Dark Theme Styles */
-  background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  /* 3D Dark Theme Styles - Black to Neon Green Gradient */
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   box-shadow: 
     0 8px 16px rgba(0, 0, 0, 0.6),
     0 4px 8px rgba(0, 0, 0, 0.4),
@@ -525,7 +525,7 @@ body {
 }
 
 .checkout-button {
-  background: linear-gradient(145deg, #004d00 0%, #00cc00 50%, #004d00 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   box-shadow: 
     0 8px 16px rgba(0, 0, 0, 0.6),
     0 4px 8px rgba(0, 0, 0, 0.4),
@@ -536,7 +536,7 @@ body {
 }
 
 .checkout-button:hover {
-  background: linear-gradient(145deg, #00cc00 0%, #00FF00 50%, #00cc00 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 70%, #000000 100%);
   box-shadow: 
     0 10px 20px rgba(0, 0, 0, 0.7),
     0 6px 12px rgba(0, 0, 0, 0.5),
@@ -557,7 +557,7 @@ body {
 .checkout-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   box-shadow: 
     0 4px 8px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.05),
@@ -565,7 +565,7 @@ body {
 }
 
 .admin-button {
-  background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   box-shadow: 
     0 8px 16px rgba(0, 0, 0, 0.6),
     0 4px 8px rgba(0, 0, 0, 0.4),
@@ -576,7 +576,7 @@ body {
 }
 
 .admin-button:hover {
-  background: linear-gradient(145deg, #2d2d2d 0%, #3d3d3d 50%, #2d2d2d 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 70%, #000000 100%);
   box-shadow: 
     0 10px 20px rgba(0, 0, 0, 0.7),
     0 6px 12px rgba(0, 0, 0, 0.5),
@@ -596,7 +596,7 @@ body {
 }
 
 .completed-button {
-  background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   box-shadow: 
     0 8px 16px rgba(0, 0, 0, 0.6),
     0 4px 8px rgba(0, 0, 0, 0.4),
@@ -607,7 +607,7 @@ body {
 }
 
 .completed-button:hover {
-  background: linear-gradient(145deg, #2d2d2d 0%, #3d3d3d 50%, #2d2d2d 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 70%, #000000 100%);
   box-shadow: 
     0 10px 20px rgba(0, 0, 0, 0.7),
     0 6px 12px rgba(0, 0, 0, 0.5),
@@ -631,7 +631,7 @@ body {
   font-size: 18px;
   font-weight: bold;
   color: #00FF00;
-  background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 30px;
   cursor: pointer;
@@ -655,7 +655,7 @@ body {
 }
 
 .spin-button:hover:not(:disabled) {
-  background: linear-gradient(145deg, #2d2d2d 0%, #3d3d3d 50%, #2d2d2d 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 70%, #000000 100%);
   transform: translateY(-3px);
   box-shadow: 
     0 12px 25px rgba(0, 0, 0, 0.7),
@@ -677,7 +677,7 @@ body {
 .spin-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   border-color: rgba(255, 255, 255, 0.05);
   box-shadow: 
     0 5px 10px rgba(0, 0, 0, 0.4),
