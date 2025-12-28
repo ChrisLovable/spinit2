@@ -1221,6 +1221,17 @@ export class ThemeParkWheel {
           const winner = this.getNumberAtPointer(); // Uses frozen wheelRotation now
           this.finalWinningNumber = winner;
 
+          // Stop music so announcements can be heard
+          if (this.casinoMusicSource) {
+            try {
+              this.casinoMusicSource.stop();
+              this.casinoMusicSource = null;
+              console.log('🔇 Music stopped - winning number selected');
+            } catch (e) {
+              // Ignore errors when stopping
+            }
+          }
+
           // Don't announce here - winner name will be announced in showWinningNumber() in main.js
           // The announcement will include both the number and winner name
 
