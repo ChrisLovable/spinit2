@@ -557,6 +557,9 @@ function initializePayPal() {
         
         if (saveResult.success) {
           console.log('✅ Payment successfully saved to database!');
+          
+          // Check if competition is fully bought out and schedule auto-spin
+          checkAndScheduleAutoSpin(competitionId);
         } else {
           console.error('❌ Payment save failed:', saveResult.error);
         }
@@ -568,6 +571,9 @@ function initializePayPal() {
         setTimeout(() => {
           updatePaidNamesDisplay();
         }, 100);
+        
+        // Reload active competitions dropdown
+        loadActiveCompetitions();
         
         // Show success message
         showPaymentSuccessMessage(paymentData, details);
@@ -1479,8 +1485,14 @@ function startCountdown() {
   // Update immediately
   updateCountdown();
   
-  // Update every second
-  countdownInterval = setInterval(updateCountdown, 1000);
+  // Update every second - check both admin-set time and auto-spin time
+  countdownInterval = setInterval(() => {
+    if (autoSpinDateTime) {
+      updateAutoSpinCountdown();
+    } else {
+      updateCountdown();
+    }
+  }, 1000);
 }
 
 // Start countdown when page loads
