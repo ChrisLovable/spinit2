@@ -1269,14 +1269,49 @@ adminForm.addEventListener('submit', async (e) => {
     timestamp: new Date().toISOString()
   };
   
-  // TODO: Save to database when DB is set up
-  console.log('Prize data to save:', formData);
+  // Save competition to database
+  let competitionId = null;
+  if (supabase) {
+    try {
+      const competitionData = {
+        title: formData.title,
+        photo: formData.photo,
+        description: formData.description,
+        prize_value: formData.value || 0,
+        ticket_price: formData.price || 50,
+        spin_date: spinDate,
+        spin_time: spinTime,
+        spin_datetime: spinDateTime || new Date().toISOString(),
+        status: 'active'
+      };
+      
+      const { data, error } = await supabase
+        .from('competitions')
+        .insert(competitionData)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error saving competition to Supabase:', error);
+        alert('Error saving competition to database. Check console for details.');
+      } else {
+        console.log('✅ Competition saved to Supabase:', data);
+        competitionId = data.id;
+        formData.competition_id = competitionId;
+      }
+    } catch (err) {
+      console.error('Error saving competition:', err);
+    }
+  }
   
-  // For now, update the UI with the new prize info
+  // Update the UI with the new prize info
   updatePrizeInfo(formData);
   
+  // Reload active competitions dropdown to include the new competition
+  loadActiveCompetitions();
+  
   // Show success message
-  alert('Prize information saved successfully! (DB integration pending)');
+  alert('Competition saved successfully!');
   
   // Close modal
   adminModal.classList.remove('active');
