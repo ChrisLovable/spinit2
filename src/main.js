@@ -1436,7 +1436,7 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
-// Auto-spin timer (5 minutes after last payment)
+// Auto-spin timer (10 minutes after last payment)
 let autoSpinTimer = null;
 let autoSpinDateTime = null;
 
@@ -1471,15 +1471,15 @@ async function checkAndScheduleAutoSpin(competitionId) {
     const isFullyBought = boughtNumbers.size >= 20;
     
     if (isFullyBought) {
-      console.log('✅ Competition fully bought out! Scheduling auto-spin in 5 minutes...');
+      console.log('✅ Competition fully bought out! Scheduling auto-spin in 10 minutes...');
       
       // Clear existing timer
       if (autoSpinTimer) {
         clearTimeout(autoSpinTimer);
       }
       
-      // Schedule spin for 5 minutes from now
-      autoSpinDateTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+      // Schedule spin for 10 minutes from now
+      autoSpinDateTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       
       // Update countdown to show auto-spin time
       updateAutoSpinCountdown();
@@ -1487,13 +1487,13 @@ async function checkAndScheduleAutoSpin(competitionId) {
       
       // Set timer to auto-spin
       autoSpinTimer = setTimeout(() => {
-        console.log('🎰 Auto-spinning wheel (5 minutes after last payment)...');
+        console.log('🎰 Auto-spinning wheel (10 minutes after last payment)...');
         if (!themeParkWheel.isSpinning) {
           // Pick random number for the spin
           const randomNumber = Math.floor(Math.random() * 20) + 1;
           startSpin();
         }
-      }, 5 * 60 * 1000); // 5 minutes
+      }, 10 * 60 * 1000); // 10 minutes
     }
   } catch (error) {
     console.error('Error checking competition status:', error);
@@ -1530,11 +1530,7 @@ function updateAutoSpinCountdown() {
   if (countdownMinutes) countdownMinutes.textContent = String(minutes).padStart(2, '0');
   if (countdownSeconds) countdownSeconds.textContent = String(seconds).padStart(2, '0');
   
-  if (countdownDate) {
-    const dateStr = formatDate(autoSpinDateTime);
-    const timeStr = formatTime(autoSpinDateTime);
-    countdownDate.textContent = `AUTO-SPIN: ${dateStr} @ ${timeStr}`;
-  }
+  // Date display removed - only show countdown timer
 }
 
 // Load active competitions (not fully bought out)
@@ -1839,12 +1835,7 @@ function updateCountdown() {
   if (countdownMinutes) countdownMinutes.textContent = String(minutes).padStart(2, '0');
   if (countdownSeconds) countdownSeconds.textContent = String(seconds).padStart(2, '0');
   
-  // Update date/time display (compact format)
-  if (countdownDate) {
-    const dateStr = formatDate(spinDateTime);
-    const timeStr = formatTime(spinDateTime);
-    countdownDate.textContent = `SPIN: ${dateStr} @ ${timeStr}`;
-  }
+  // Date display removed - only show countdown timer
 }
 
 function startCountdown() {
