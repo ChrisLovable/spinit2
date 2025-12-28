@@ -1028,6 +1028,12 @@ async function updatePaidNamesDisplay() {
           mobileInput.readOnly = false;
           delete mobileInput.dataset.paidMobile;
           
+          // Remove green styling from number label
+          const numberLabel = document.querySelector(`label[for="num-${i}"]`);
+          if (numberLabel) {
+            numberLabel.classList.remove('paid-number');
+          }
+          
           // Re-enable checkbox
           const checkbox = document.getElementById(`num-${i}`);
           if (checkbox) {
