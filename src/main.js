@@ -546,8 +546,20 @@ function initializePayPal() {
           console.error('Error saving payment:', e);
         }
         
-        // Get or create competition ID
-        const competitionId = await getOrCreateCompetitionId();
+        // Get selected competition ID (REQUIRED - cannot be empty)
+        let competitionId;
+        try {
+          competitionId = await getOrCreateCompetitionId();
+          
+          if (!competitionId || competitionId.trim() === '') {
+            alert('ERROR: Please select a competition before purchasing tickets. Competition title is required.');
+            return;
+          }
+        } catch (error) {
+          alert(`ERROR: ${error.message}`);
+          console.error('❌ Competition selection error:', error);
+          return; // Stop payment process
+        }
         
         // Save to database (Supabase or localStorage)
         console.log('💾 Saving payment to database...');
@@ -681,37 +693,55 @@ function getWinnerNameForNumber(winningNumber) {
   }
 }
 
-// Get or create competition ID from current prize data
+// Get selected competition ID from dropdown (REQUIRED for payment)
 async function getOrCreateCompetitionId() {
   try {
-    const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+    const competitionSelect = document.getElementById('competitionSelect');
     
-    // If competition_id exists, return it
-    if (prizeData.competition_id) {
-      return prizeData.competition_id;
+    if (!competitionSelect) {
+      throw new Error('Competition selector not found');
     }
     
-    // Otherwise, create a temporary ID (will be replaced when DB is connected)
-    const tempId = 'temp_' + Date.now();
-    prizeData.competition_id = tempId;
+    const selectedCompetitionId = competitionSelect.value;
+    
+    // Competition ID is REQUIRED - cannot be empty
+    if (!selectedCompetitionId || selectedCompetitionId.trim() === '') {
+      throw new Error('Please select a competition before purchasing tickets. Competition title is required.');
+    }
+    
+    // Validate it's not a temp ID
+    if (selectedCompetitionId.startsWith('temp_')) {
+      throw new Error('Invalid competition selected. Please select a valid competition from the dropdown.');
+    }
+    
+    // Validate it's a valid UUID format
+    if (!selectedCompetitionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      throw new Error('Invalid competition ID format. Please select a valid competition.');
+    }
+    
+    // Get the competition title from the dropdown option
+    const selectedOption = competitionSelect.options[competitionSelect.selectedIndex];
+    const competitionTitle = selectedOption ? selectedOption.textContent : '';
+    
+    if (!competitionTitle || competitionTitle.trim() === '') {
+      throw new Error('Competition title is required. Please select a valid competition.');
+    }
+    
+    console.log('✅ Selected competition:', {
+      id: selectedCompetitionId,
+      title: competitionTitle
+    });
+    
+    // Update prizeData with selected competition
+    const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+    prizeData.competition_id = selectedCompetitionId;
+    prizeData.title = competitionTitle;
     localStorage.setItem('prizeData', JSON.stringify(prizeData));
     
-    // TODO: When Supabase is connected, create actual competition:
-    // const { data, error } = await supabase.rpc('create_competition', {
-    //   p_title: 'Prize Wheel Competition',
-    //   p_photo: prizeData.photo,
-    //   p_description: prizeData.description,
-    //   p_prize_value: prizeData.value || 0,
-    //   p_ticket_price: prizeData.price || 50,
-    //   p_spin_date: prizeData.spinDate,
-    //   p_spin_time: prizeData.spinTime
-    // });
-    // return data;
-    
-    return tempId;
+    return selectedCompetitionId;
   } catch (error) {
-    console.error('Error getting competition ID:', error);
-    return 'temp_' + Date.now();
+    console.error('❌ Error getting competition ID:', error);
+    throw error; // Re-throw to prevent payment
   }
 }
 
