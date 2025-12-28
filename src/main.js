@@ -1508,6 +1508,27 @@ async function checkAndScheduleAutoSpin(competitionId) {
     if (isFullyBought) {
       console.log('✅ Competition fully bought out! Scheduling auto-spin in 10 minutes...');
       
+      // Update competition status to 'completed' in database
+      if (supabase && competitionId && !competitionId.startsWith('temp_')) {
+        try {
+          const { error: updateError } = await supabase
+            .from('competitions')
+            .update({ 
+              status: 'completed',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', competitionId);
+          
+          if (updateError) {
+            console.error('Error updating competition status:', updateError);
+          } else {
+            console.log('✅ Competition status updated to "completed"');
+          }
+        } catch (err) {
+          console.error('Error updating competition status:', err);
+        }
+      }
+      
       // Clear existing timer
       if (autoSpinTimer) {
         clearTimeout(autoSpinTimer);
@@ -1702,13 +1723,16 @@ async function loadCompletedCompetitions() {
       }
     }
     
-    // Filter to completed competitions (has winner OR all 20 numbers bought)
+    // Filter to completed competitions (has winner OR all 20 numbers bought OR status='completed')
     const completedComps = [];
     for (const comp of competitions) {
       const hasWinner = comp.winning_number && comp.winner_name;
-      const isFullyBought = await !isCompetitionActive(comp.id);
+      const statusCompleted = comp.status === 'completed';
+      const isFullyBought = !(await isCompetitionActive(comp.id));
       
-      if (hasWinner || isFullyBought) {
+      console.log(`Competition ${comp.id} (${comp.title}): hasWinner=${hasWinner}, statusCompleted=${statusCompleted}, isFullyBought=${isFullyBought}`);
+      
+      if (hasWinner || statusCompleted || isFullyBought) {
         // Get winner info if not already set
         let winnerNumber = comp.winning_number;
         let winnerName = comp.winner_name;
