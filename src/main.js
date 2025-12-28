@@ -950,12 +950,15 @@ async function updatePaidNamesDisplay() {
     
     console.log('Paid names by number:', paidNamesByNumber);
     
-    // Update display for each number - show paid name in the input field
+    // Update display for each number - show paid name and mobile in the input fields
     for (let i = 1; i <= 20; i++) {
       const nameInput = document.getElementById(`name-${i}`);
-      if (nameInput) {
+      const mobileInput = document.getElementById(`mobile-${i}`);
+      
+      if (nameInput && mobileInput) {
         if (paidNamesByNumber[i]) {
           const playerName = paidNamesByNumber[i].player_name || paidNamesByNumber[i].name || 'Unnamed';
+          const playerMobile = paidNamesByNumber[i].mobile_number || paidNamesByNumber[i].mobile || '';
           const upperName = playerName.toUpperCase();
           
           // Set the paid name in the input field
@@ -964,6 +967,12 @@ async function updatePaidNamesDisplay() {
           nameInput.readOnly = true;
           nameInput.dataset.paidName = upperName;
           
+          // Set the paid mobile in the input field
+          mobileInput.value = playerMobile;
+          mobileInput.classList.add('paid-name');
+          mobileInput.readOnly = true;
+          mobileInput.dataset.paidMobile = playerMobile;
+          
           // Uncheck checkbox if it was checked (can't select paid numbers)
           const checkbox = document.getElementById(`num-${i}`);
           if (checkbox) {
@@ -971,12 +980,19 @@ async function updatePaidNamesDisplay() {
             checkbox.disabled = true;
           }
           
-          console.log(`Displaying paid name for number ${i} in input field: ${upperName}`);
+          // Remove from selectedNumbers if it was there
+          selectedNumbers.delete(i);
+          
+          console.log(`Displaying paid name and mobile for number ${i}: ${upperName}, ${playerMobile}`);
         } else {
           // Remove paid styling if not paid
           nameInput.classList.remove('paid-name');
           nameInput.readOnly = false;
           delete nameInput.dataset.paidName;
+          
+          mobileInput.classList.remove('paid-name');
+          mobileInput.readOnly = false;
+          delete mobileInput.dataset.paidMobile;
           
           // Re-enable checkbox
           const checkbox = document.getElementById(`num-${i}`);
