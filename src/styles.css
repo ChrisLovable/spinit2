@@ -477,8 +477,9 @@ body {
 }
 
 .number-item label {
-  color: #00FF00;
+  color: #FFFFFF;
   font-weight: bold;
+  font-size: 20px;
   min-width: 25px;
   max-width: 25px;
   text-align: center;
