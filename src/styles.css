@@ -411,7 +411,7 @@ body {
 
 .number-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
   background: rgba(255, 255, 255, 0.1);
   padding: 6px 8px; /* Reduced padding to fit more on screen */
