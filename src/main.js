@@ -647,11 +647,12 @@ function initializePayPal() {
         if (saveResult.success) {
           console.log('✅ Payment successfully saved to database!');
           
-          // Update paid names display immediately to show green styling
+          // Refresh UI to show paid tickets in green + lock them
           updatePaidNamesDisplay();
           
-          // Check if competition is fully bought out and schedule auto-spin (starts countdown)
-          checkAndScheduleAutoSpin(competitionId);
+          // If this purchase completed the set (all 20), start the 10-min countdown
+          const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+          await checkAndScheduleAutoSpin(prizeData.competition_id || competitionId);
         } else {
           console.error('❌ Payment save failed:', saveResult.error);
         }
@@ -659,10 +660,8 @@ function initializePayPal() {
         // Display all paid players (including new ones) - visible to everyone
         displayAllPaidPlayers();
         
-        // Update paid names display next to numbers (with small delay to ensure DB save completes)
-        setTimeout(() => {
-          updatePaidNamesDisplay();
-        }, 100);
+        // Reload active competitions dropdown
+        loadActiveCompetitions();
         
         // Reload active competitions dropdown
         loadActiveCompetitions();
@@ -1624,6 +1623,28 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
+// Restore scheduled auto-spin countdown (so refresh doesn't lose it)
+const savedAutoSpin = localStorage.getItem('autoSpinDateTime');
+if (savedAutoSpin) {
+  const dt = new Date(savedAutoSpin);
+  if (!isNaN(dt.getTime()) && dt > new Date()) {
+    autoSpinDateTime = dt;
+    startCountdown();
+
+    // Also restore the actual auto-spin timeout
+    const msRemaining = dt.getTime() - Date.now();
+    if (autoSpinTimer) clearTimeout(autoSpinTimer);
+    autoSpinTimer = setTimeout(() => {
+      console.log('🎰 Auto-spinning wheel (restored after refresh)...');
+      if (!themeParkWheel.isSpinning) startSpin();
+      localStorage.removeItem('autoSpinDateTime');
+      autoSpinDateTime = null;
+    }, msRemaining);
+  } else {
+    localStorage.removeItem('autoSpinDateTime');
+  }
+}
+
 // Auto-spin timer (10 minutes after last payment)
 let autoSpinTimer = null;
 let autoSpinDateTime = null;
@@ -1690,6 +1711,9 @@ async function checkAndScheduleAutoSpin(competitionId) {
       // Schedule spin for 10 minutes from now
       autoSpinDateTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
       
+      // Persist the 10-minute timer so refresh doesn't kill it
+      localStorage.setItem('autoSpinDateTime', autoSpinDateTime.toISOString());
+      
       console.log('⏰ Starting 10-minute countdown. Auto-spin scheduled for:', autoSpinDateTime);
       console.log('⏰ Current time:', new Date());
       console.log('⏰ Time difference:', (autoSpinDateTime - new Date()) / 1000, 'seconds');
@@ -1719,6 +1743,9 @@ async function checkAndScheduleAutoSpin(competitionId) {
           const randomNumber = Math.floor(Math.random() * 20) + 1;
           startSpin();
         }
+        // Clear localStorage when spin happens
+        localStorage.removeItem('autoSpinDateTime');
+        autoSpinDateTime = null;
       }, 10 * 60 * 1000); // 10 minutes
     }
   } catch (error) {

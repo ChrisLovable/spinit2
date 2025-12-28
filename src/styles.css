@@ -492,6 +492,14 @@ body {
   text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
 }
 
+.number-item.paid {
+  border-color: rgba(0, 255, 0, 0.75);
+  background: rgba(0, 255, 0, 0.08);
+}
+.number-item.paid label {
+  color: rgba(0, 255, 0, 0.95);
+}
+
 /* Removed .paid-name-display - now using input field with .paid-name class */
 
 .checkout-button, .admin-button, .completed-button {
