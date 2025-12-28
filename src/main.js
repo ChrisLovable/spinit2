@@ -647,7 +647,10 @@ function initializePayPal() {
         if (saveResult.success) {
           console.log('✅ Payment successfully saved to database!');
           
-          // Check if competition is fully bought out and schedule auto-spin
+          // Update paid names display immediately to show green styling
+          updatePaidNamesDisplay();
+          
+          // Check if competition is fully bought out and schedule auto-spin (starts countdown)
           checkAndScheduleAutoSpin(competitionId);
         } else {
           console.error('❌ Payment save failed:', saveResult.error);
