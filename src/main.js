@@ -64,37 +64,7 @@ async function testSupabaseConnection() {
     console.log('✅ User entries table accessible');
     console.log('   Found', entriesData?.length || 0, 'entries');
 
-    // Test 3: Check if spin_results table exists
-    console.log('📊 Test 3: Checking spin_results table...');
-    const { data: spinData, error: spinError } = await supabase
-      .from('spin_results')
-      .select('id')
-      .limit(1);
-
-    if (spinError) {
-      console.error('❌ Spin results table error:', spinError.message);
-      return false;
-    }
-
-    console.log('✅ Spin results table accessible');
-    console.log('   Found', spinData?.length || 0, 'spin results');
-
-    // Test 4: Check if winners table exists
-    console.log('📊 Test 4: Checking winners table...');
-    const { data: winnersData, error: winnersError } = await supabase
-      .from('winners')
-      .select('id')
-      .limit(1);
-
-    if (winnersError) {
-      console.error('❌ Winners table error:', winnersError.message);
-      return false;
-    }
-
-    console.log('✅ Winners table accessible');
-    console.log('   Found', winnersData?.length || 0, 'winners');
-
-    // Test 5: Try inserting a test competition (then delete it)
+    // Test 3: Try inserting a test competition (then delete it)
     console.log('📊 Test 5: Testing INSERT operation...');
     const testCompetition = {
       title: 'Test Competition - DELETE ME',
@@ -138,7 +108,7 @@ async function testSupabaseConnection() {
     console.log('');
     console.log('🎉 ALL DATABASE TESTS PASSED!');
     console.log('✅ Supabase connection: WORKING');
-    console.log('✅ All tables accessible: WORKING');
+    console.log('✅ Tables accessible: competitions, user_entries');
     console.log('✅ INSERT operation: WORKING');
     console.log('✅ DELETE operation: WORKING');
     console.log('');
@@ -537,8 +507,17 @@ function initializePayPal() {
         const competitionId = await getOrCreateCompetitionId();
         
         // Save to database (Supabase or localStorage)
+        console.log('💾 Saving payment to database...');
+        console.log('   Competition ID:', competitionId);
+        console.log('   Entries to save:', paymentData.selected_numbers);
         const saveResult = await savePaymentToDatabase(paymentData, competitionId);
-        console.log('Save result:', saveResult);
+        console.log('💾 Save result:', saveResult);
+        
+        if (saveResult.success) {
+          console.log('✅ Payment successfully saved to database!');
+        } else {
+          console.error('❌ Payment save failed:', saveResult.error);
+        }
         
         // Display all paid players (including new ones) - visible to everyone
         displayAllPaidPlayers();
@@ -719,7 +698,8 @@ async function savePaymentToDatabase(paymentData, competitionId) {
           localStorage.setItem('user_entries', JSON.stringify(existingEntries));
           console.log('Payment entries saved to localStorage (fallback):', entries);
         } else {
-          console.log('Payment entries saved to Supabase:', data);
+          console.log('✅ Payment entries saved to Supabase:', data);
+          console.log('✅ Database save confirmed - entries:', entries.length);
           // Also save to localStorage as backup
           const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
           existingEntries.push(...entries);

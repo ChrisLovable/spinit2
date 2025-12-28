@@ -19,40 +19,22 @@ CREATE TABLE IF NOT EXISTS competitions (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- User entries table
+-- User entries table (stores payment/entry data)
 CREATE TABLE IF NOT EXISTS user_entries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
+    competition_id UUID REFERENCES competitions(id) ON DELETE CASCADE,
     entry_number INTEGER NOT NULL CHECK (entry_number >= 1 AND entry_number <= 20),
     player_name VARCHAR(255) NOT NULL,
     payment_transaction_id VARCHAR(255),
     payment_amount DECIMAL(10, 2),
-    payment_status VARCHAR(50),
+    payment_currency VARCHAR(10),
+    payment_status VARCHAR(50) DEFAULT 'completed',
+    payment_completed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Spin results table
-CREATE TABLE IF NOT EXISTS spin_results (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
-    winning_number INTEGER NOT NULL CHECK (winning_number >= 1 AND winning_number <= 20),
-    spin_timestamp TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Winners table
-CREATE TABLE IF NOT EXISTS winners (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    competition_id UUID NOT NULL REFERENCES competitions(id) ON DELETE CASCADE,
-    spin_result_id UUID NOT NULL REFERENCES spin_results(id) ON DELETE CASCADE,
-    user_entry_id UUID NOT NULL REFERENCES user_entries(id) ON DELETE CASCADE,
-    player_name VARCHAR(255) NOT NULL,
-    winning_number INTEGER NOT NULL CHECK (winning_number >= 1 AND winning_number <= 20),
-    won_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Indexes
+-- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_competitions_status ON competitions(status);
 CREATE INDEX IF NOT EXISTS idx_user_entries_competition ON user_entries(competition_id);
 CREATE INDEX IF NOT EXISTS idx_user_entries_number ON user_entries(entry_number);
-CREATE INDEX IF NOT EXISTS idx_spin_results_competition ON spin_results(competition_id);
-CREATE INDEX IF NOT EXISTS idx_winners_competition ON winners(competition_id);
+CREATE INDEX IF NOT EXISTS idx_user_entries_payment_status ON user_entries(payment_status);

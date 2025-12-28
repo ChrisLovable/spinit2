@@ -390,14 +390,18 @@ body {
 .number-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: rgba(255, 255, 255, 0.1);
-  padding: 6px 10px; /* Reduced padding to fit more on screen */
+  padding: 6px 8px; /* Reduced padding to fit more on screen */
   border-radius: 8px;
   border: 1px solid rgba(255, 215, 0, 0.2);
   transition: all 0.2s ease;
   min-height: 40px; /* Smaller minimum height */
   flex-shrink: 0; /* Prevent items from shrinking */
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* Prevent content from overflowing */
+  box-sizing: border-box;
 }
 
 .number-item:hover {
@@ -414,14 +418,19 @@ body {
 
 .number-item input[type="text"] {
   flex: 1;
+  min-width: 0; /* Allow flex item to shrink below its content size */
+  max-width: 100%;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 5px;
-  padding: 6px 10px;
+  padding: 6px 8px;
   color: #fff;
-  font-size: 14px;
+  font-size: 13px;
   outline: none;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .number-item input[type="text"]:focus {
@@ -432,22 +441,31 @@ body {
 .number-item label {
   color: #FFD700;
   font-weight: bold;
-  min-width: 30px;
+  min-width: 25px;
+  max-width: 25px;
   text-align: center;
+  flex-shrink: 0;
+  font-size: 14px;
 }
 
 .paid-name-display {
   color: #00FF00;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
   text-transform: uppercase;
-  margin-left: 8px;
-  padding: 4px 8px;
+  margin-left: 4px;
+  padding: 3px 6px;
   background: rgba(0, 255, 0, 0.1);
   border: 1px solid rgba(0, 255, 0, 0.5);
   border-radius: 4px;
   text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
   display: none;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .checkout-button, .admin-button {
