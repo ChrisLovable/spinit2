@@ -5,7 +5,8 @@ const urlsToCache = [
   '/src/main.js',
   '/src/styles.css',
   '/src/RouletteWheel.js',
-  '/SPINITLOGO.png'
+  '/SPINITLOGO.png',
+  '/manifest.json'
 ];
 
 // Install event - cache resources
