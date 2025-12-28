@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3D Prize Wheel</title>
+  <link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Spin Button - First -->
+    <div class="spin-button-container">
+      <button id="spinButton" class="spin-button">SPIN</button>
+    </div>
+    
+    <!-- Competition Selector - Second -->
+    <div class="competition-selector">
+      <label for="competitionSelect">Select Competition:</label>
+      <select id="competitionSelect" class="competition-dropdown">
+        <option value="">Loading competitions...</option>
+      </select>
+    </div>
+    
+    <!-- Countdown Timer - Third -->
+    <div id="countdownTimer" class="countdown-timer">
+      <div class="countdown-label">SPINNING IN</div>
+      <div class="countdown-display">
+        <span id="countdownHours">00</span>H <span id="countdownMinutes">00</span>M <span id="countdownSeconds">00</span>S
+      </div>
+      <div class="countdown-date" id="countdownDate">SPINNING WILL BE ON [DATE] AT [TIME]</div>
+    </div>
+    
+    <!-- Wheel Stage - Fourth -->
+    <div id="wheelStage">
+      <canvas id="canvas"></canvas>
+      
+      <!-- Massive Winning Number Overlay -->
+      <div id="winningNumberOverlay" class="winning-number-overlay">
+        <div class="winning-number-container">
+          <div class="winning-number-label">WINNER!</div>
+          <div class="winning-number-display" id="winningNumberDisplay">0</div>
+          <div class="winning-number-glow"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Prize Info - Fifth -->
+    <div class="prize-info">
+      <h2 class="prize-label" id="prizeLabel">THIS WEEK'S PRIZE</h2>
+      <div class="prize-photo">
+        <div class="photo-placeholder">📷 Photo</div>
+      </div>
+      <div class="prize-description">
+        <div class="description-placeholder">Description placeholder text</div>
+      </div>
+      <div class="prize-pricing">
+        <div class="prize-value">
+          <div class="value-placeholder">Value: $0.00</div>
+        </div>
+        <div class="ticket-price">
+          <div class="price-placeholder">Ticket Price: $0.00</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="game-panel">
+      <div class="number-selection">
+        <h3>Select Numbers</h3>
+        <div class="number-grid" id="numberGrid"></div>
+      </div>
+      <button id="checkoutButton" class="checkout-button">CHECKOUT</button>
+      <button id="adminButton" class="admin-button">ADMIN</button>
+    </div>
+  </div>
+
+  <!-- Admin Modal -->
+  <div id="adminModal" class="admin-modal">
+    <div class="admin-modal-content">
+      <div class="admin-modal-header">
+        <h2>Admin Panel</h2>
+        <button class="admin-modal-close" id="adminModalClose">&times;</button>
+      </div>
+      <form id="adminForm" class="admin-form">
+        <div class="admin-form-group">
+          <label for="adminPhoto">1. Upload Photo</label>
+          <input type="file" id="adminPhoto" accept="image/*,.heic,.heif" required>
+          <div class="photo-preview" id="photoPreview"></div>
+        </div>
+        <div class="admin-form-group">
+          <label for="adminTitle">2. Competition Title</label>
+          <input type="text" id="adminTitle" placeholder="Enter competition title..." required>
+        </div>
+        <div class="admin-form-group">
+          <label for="adminDescription">3. Description</label>
+          <textarea id="adminDescription" rows="4" placeholder="Enter prize description..." required></textarea>
+        </div>
+        <div class="admin-form-group">
+          <label for="adminValue">4. Value ($)</label>
+          <input type="number" id="adminValue" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+        <div class="admin-form-group">
+          <label for="adminPrice">5. Price / Ticket ($)</label>
+          <input type="number" id="adminPrice" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+        <div class="admin-form-group">
+          <label for="adminSpinDate">6. Spin Date</label>
+          <input type="date" id="adminSpinDate" required>
+        </div>
+        <div class="admin-form-group">
+          <label for="adminSpinTime">7. Spin Time</label>
+          <input type="time" id="adminSpinTime" required>
+        </div>
+        <div class="admin-form-actions">
+          <button type="submit" class="admin-save-button">SAVE</button>
+          <button type="button" class="admin-cancel-button" id="adminCancelButton">CANCEL</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Password Modal -->
+  <div id="passwordModal" class="password-modal">
+    <div class="password-modal-content">
+      <h2>Admin Access</h2>
+      <input type="password" id="adminPassword" placeholder="Enter password" autofocus>
+      <div class="password-modal-actions">
+        <button id="passwordSubmit" class="password-submit-button">SUBMIT</button>
+        <button id="passwordCancel" class="password-cancel-button">CANCEL</button>
+      </div>
+      <div id="passwordError" class="password-error"></div>
+    </div>
+  </div>
+
+  <!-- For Sandbox Testing: Use USD (ZAR not supported in sandbox) -->
+  <!-- For Production: Change currency=USD to currency=ZAR -->
+  <script src="https://www.paypal.com/sdk/js?client-id=AcOhAoDv1YGtO6KG9VUwBkdNmqpTI9VUVVzkzWTpCP2GVu17nrsElPtuxQm-WK4j6xMFOsILJkH1W3Am&currency=USD"></script>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+
