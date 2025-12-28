@@ -428,17 +428,18 @@ function updateCheckoutButton() {
     }
   }
   
-  // Update PayPal button visibility instead of checkout button
-  if (paypalButtonsContainer) {
-    if (count === 0 || !allValid) {
+  // Show/hide checkout button based on selection
+  if (count === 0 || !allValid) {
+    checkoutButton.style.display = 'none';
+    if (paypalButtonsContainer) {
       paypalButtonsContainer.style.display = 'none';
-    } else {
-      paypalButtonsContainer.style.display = 'block';
+    }
+  } else {
+    checkoutButton.style.display = 'block';
+    if (paypalButtonsContainer) {
+      paypalButtonsContainer.style.display = 'none'; // Hide PayPal until checkout is clicked
     }
   }
-  
-  // Keep checkout button hidden (it's replaced by PayPal)
-  checkoutButton.style.display = 'none';
 }
 
 // Get ticket price from admin panel (displayed value)

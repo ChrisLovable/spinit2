@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS user_entries (
     competition_id INT NOT NULL,
     entry_number INT NOT NULL CHECK (entry_number >= 1 AND entry_number <= 20),
     player_name VARCHAR(255) NOT NULL,
+    mobile_number VARCHAR(20),
     payment_transaction_id VARCHAR(255),
     payment_amount DECIMAL(10, 2),
     payment_status VARCHAR(50),
