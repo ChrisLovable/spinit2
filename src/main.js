@@ -1399,6 +1399,204 @@ loadAndDisplayPaidPlayers();
 // Update paid names display on page load
 updatePaidNamesDisplay();
 
+// Load active competitions on page load
+loadActiveCompetitions();
+
+// Auto-spin timer (5 minutes after last payment)
+let autoSpinTimer = null;
+let autoSpinDateTime = null;
+
+// Check if competition is fully bought out and schedule auto-spin
+async function checkAndScheduleAutoSpin(competitionId) {
+  try {
+    // Get all entries for this competition
+    let entries = [];
+    if (supabase && competitionId && !competitionId.startsWith('temp_')) {
+      const { data, error } = await supabase
+        .from('user_entries')
+        .select('entry_number')
+        .eq('competition_id', competitionId)
+        .eq('payment_status', 'completed');
+      
+      if (!error && data) {
+        entries = data;
+      }
+    } else {
+      // Fallback to localStorage
+      const allEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+      entries = allEntries.filter(e => 
+        (!competitionId || e.competition_id === competitionId || !e.competition_id) &&
+        e.payment_status === 'completed'
+      );
+    }
+    
+    // Get unique entry numbers
+    const boughtNumbers = new Set(entries.map(e => e.entry_number || e.number));
+    
+    // Check if all 20 numbers are bought
+    const isFullyBought = boughtNumbers.size >= 20;
+    
+    if (isFullyBought) {
+      console.log('✅ Competition fully bought out! Scheduling auto-spin in 5 minutes...');
+      
+      // Clear existing timer
+      if (autoSpinTimer) {
+        clearTimeout(autoSpinTimer);
+      }
+      
+      // Schedule spin for 5 minutes from now
+      autoSpinDateTime = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+      
+      // Update countdown to show auto-spin time
+      updateAutoSpinCountdown();
+      startCountdown(); // Restart countdown to show auto-spin time
+      
+      // Set timer to auto-spin
+      autoSpinTimer = setTimeout(() => {
+        console.log('🎰 Auto-spinning wheel (5 minutes after last payment)...');
+        if (!themeParkWheel.isSpinning) {
+          // Pick random number for the spin
+          const randomNumber = Math.floor(Math.random() * 20) + 1;
+          startSpin();
+        }
+      }, 5 * 60 * 1000); // 5 minutes
+    }
+  } catch (error) {
+    console.error('Error checking competition status:', error);
+  }
+}
+
+// Update countdown to show auto-spin time
+function updateAutoSpinCountdown() {
+  if (!autoSpinDateTime) return;
+  
+  const countdownTimer = document.getElementById('countdownTimer');
+  const countdownHours = document.getElementById('countdownHours');
+  const countdownMinutes = document.getElementById('countdownMinutes');
+  const countdownSeconds = document.getElementById('countdownSeconds');
+  const countdownDate = document.getElementById('countdownDate');
+  
+  if (!countdownTimer) return;
+  
+  const now = new Date();
+  const diff = autoSpinDateTime - now;
+  
+  if (diff <= 0) {
+    countdownTimer.style.display = 'none';
+    return;
+  }
+  
+  countdownTimer.style.display = 'block';
+  
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  
+  if (countdownHours) countdownHours.textContent = String(hours).padStart(2, '0');
+  if (countdownMinutes) countdownMinutes.textContent = String(minutes).padStart(2, '0');
+  if (countdownSeconds) countdownSeconds.textContent = String(seconds).padStart(2, '0');
+  
+  if (countdownDate) {
+    const dateStr = formatDate(autoSpinDateTime);
+    const timeStr = formatTime(autoSpinDateTime);
+    countdownDate.textContent = `AUTO-SPIN: ${dateStr} @ ${timeStr}`;
+  }
+}
+
+// Load active competitions (not fully bought out)
+async function loadActiveCompetitions() {
+  try {
+    const competitionSelect = document.getElementById('competitionSelect');
+    if (!competitionSelect) return;
+    
+    let competitions = [];
+    
+    // Load from Supabase if available
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('competitions')
+        .select('id, title, status')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        competitions = data;
+      }
+    } else {
+      // Fallback: use localStorage prizeData as single competition
+      const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+      if (prizeData.title) {
+        competitions = [{
+          id: prizeData.competition_id || 'temp',
+          title: prizeData.title,
+          status: 'active'
+        }];
+      }
+    }
+    
+    // Filter to only active competitions (not fully bought out)
+    const activeCompetitions = [];
+    for (const comp of competitions) {
+      const isActive = await isCompetitionActive(comp.id);
+      if (isActive) {
+        activeCompetitions.push(comp);
+      }
+    }
+    
+    // Populate dropdown
+    competitionSelect.innerHTML = '';
+    if (activeCompetitions.length === 0) {
+      competitionSelect.innerHTML = '<option value="">No active competitions</option>';
+    } else {
+      activeCompetitions.forEach(comp => {
+        const option = document.createElement('option');
+        option.value = comp.id;
+        option.textContent = comp.title;
+        competitionSelect.appendChild(option);
+      });
+    }
+    
+    console.log('Loaded active competitions:', activeCompetitions.length);
+  } catch (error) {
+    console.error('Error loading competitions:', error);
+  }
+}
+
+// Check if competition is active (not fully bought out)
+async function isCompetitionActive(competitionId) {
+  try {
+    // Get all entries for this competition
+    let entries = [];
+    if (supabase && competitionId && !competitionId.startsWith('temp_')) {
+      const { data, error } = await supabase
+        .from('user_entries')
+        .select('entry_number')
+        .eq('competition_id', competitionId)
+        .eq('payment_status', 'completed');
+      
+      if (!error && data) {
+        entries = data;
+      }
+    } else {
+      // Fallback to localStorage
+      const allEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
+      entries = allEntries.filter(e => 
+        (!competitionId || e.competition_id === competitionId || !e.competition_id) &&
+        e.payment_status === 'completed'
+      );
+    }
+    
+    // Get unique entry numbers
+    const boughtNumbers = new Set(entries.map(e => e.entry_number || e.number));
+    
+    // Competition is active if not all 20 numbers are bought
+    return boughtNumbers.size < 20;
+  } catch (error) {
+    console.error('Error checking competition status:', error);
+    return true; // Default to active if error
+  }
+}
+
 // Countdown Timer Functions
 let countdownInterval = null;
 
