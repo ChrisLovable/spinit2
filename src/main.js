@@ -197,11 +197,19 @@ if (!canvas) {
 }
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+let lastW = 0, lastH = 0;
+let resizeRaf = null;
+
 const updateRendererSize = () => {
   const size = getContainerSize();
-  console.log('Renderer size:', size);
-  renderer.setSize(size.width, size.height);
-  camera.aspect = size.width / size.height;
+  const w = size.width || 375;
+  const h = size.height || 812;
+
+  if (w === lastW && h === lastH) return;
+  lastW = w; lastH = h;
+
+  renderer.setSize(w, h, false); // false = don't force canvas CSS size
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
   
   // Ensure canvas is visible
@@ -215,9 +223,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-// Allow canvas to not block scrolling - but still allow wheel interaction
-canvas.style.pointerEvents = 'auto'; // Keep pointer events for wheel interaction
-canvas.style.touchAction = 'pan-y'; // Allow vertical scrolling
+// Stop canvas from hijacking touch/scroll
+canvas.style.touchAction = 'pan-y';
+canvas.style.pointerEvents = 'none'; // canvas won't eat scroll/touch
 
 // Lighting
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
@@ -1445,23 +1453,20 @@ function startSpin() {
 // Event listeners
 spinButton.addEventListener('click', startSpin);
 
-// Handle window resize and orientation change
-const handleResize = () => {
-  updateRendererSize();
-};
+// Prevent resize "thrash" - debounced "only if changed" version
+function handleResize() {
+  if (resizeRaf) return;
+  resizeRaf = requestAnimationFrame(() => {
+    resizeRaf = null;
+    updateRendererSize();
+  });
+}
 
 window.addEventListener('resize', handleResize);
-window.addEventListener('orientationchange', () => {
-  setTimeout(handleResize, 100); // Delay for orientation change to complete
-});
+window.addEventListener('orientationchange', () => setTimeout(handleResize, 120));
 
-// Use ResizeObserver for container size changes
 const resizeObserver = new ResizeObserver(handleResize);
-if (wheelStage) {
-  resizeObserver.observe(wheelStage);
-} else {
-  resizeObserver.observe(app);
-}
+resizeObserver.observe(document.getElementById('wheelStage') || app);
 
 // Animation loop
 function animate() {
