@@ -673,9 +673,20 @@ async function getOrCreateCompetitionId() {
 // Save payment data to database
 async function savePaymentToDatabase(paymentData, competitionId) {
   try {
+    console.log('💾 Preparing to save payment data...');
+    console.log('   Competition ID:', competitionId);
+    console.log('   Competition ID type:', typeof competitionId);
+    console.log('   Is temp ID?', competitionId && competitionId.startsWith('temp_'));
+    
+    // Check if competition_id is a valid UUID or temp ID
+    // If it's a temp ID, set to null (since competition_id allows NULL in schema)
+    const validCompetitionId = (competitionId && !competitionId.startsWith('temp_') && competitionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i))
+      ? competitionId
+      : null;
+    
     // Prepare entries for database
     const entries = paymentData.selected_numbers.map(entry => ({
-      competition_id: competitionId,
+      competition_id: validCompetitionId, // Use null if temp ID
       entry_number: entry.number,
       player_name: entry.name || 'Unnamed',
       payment_transaction_id: paymentData.transaction_id,
@@ -686,8 +697,11 @@ async function savePaymentToDatabase(paymentData, competitionId) {
       created_at: paymentData.timestamp
     }));
     
+    console.log('   Prepared entries:', entries);
+    
     // Save to Supabase if available
     if (supabase) {
+      console.log('   Supabase client available, attempting save...');
       try {
         const { data, error } = await supabase
           .from('user_entries')
@@ -695,39 +709,55 @@ async function savePaymentToDatabase(paymentData, competitionId) {
           .select();
         
         if (error) {
-          console.error('Error saving to Supabase:', error);
+          console.error('❌ Error saving to Supabase:', error);
+          console.error('   Error code:', error.code);
+          console.error('   Error message:', error.message);
+          console.error('   Error details:', error.details);
+          console.error('   Error hint:', error.hint);
+          
           // Fall back to localStorage if Supabase fails
           const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
           existingEntries.push(...entries);
           localStorage.setItem('user_entries', JSON.stringify(existingEntries));
-          console.log('Payment entries saved to localStorage (fallback):', entries);
+          console.log('   Payment entries saved to localStorage (fallback):', entries.length);
+          
+          return { success: false, error: error.message, entries, savedToLocalStorage: true };
         } else {
           console.log('✅ Payment entries saved to Supabase:', data);
-          console.log('✅ Database save confirmed - entries:', entries.length);
+          console.log('✅ Database save confirmed - entries:', data.length);
+          
           // Also save to localStorage as backup
           const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
           existingEntries.push(...entries);
           localStorage.setItem('user_entries', JSON.stringify(existingEntries));
+          
+          return { success: true, entries: data, savedToSupabase: true };
         }
       } catch (supabaseError) {
-        console.error('Supabase save error:', supabaseError);
+        console.error('❌ Supabase save exception:', supabaseError);
+        console.error('   Exception details:', JSON.stringify(supabaseError, null, 2));
+        
         // Fall back to localStorage
         const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
         existingEntries.push(...entries);
         localStorage.setItem('user_entries', JSON.stringify(existingEntries));
-        console.log('Payment entries saved to localStorage (fallback):', entries);
+        console.log('   Payment entries saved to localStorage (fallback):', entries.length);
+        
+        return { success: false, error: supabaseError.message, entries, savedToLocalStorage: true };
       }
     } else {
+      console.warn('⚠️ Supabase client not available, saving to localStorage only');
       // No Supabase, save to localStorage only
       const existingEntries = JSON.parse(localStorage.getItem('user_entries') || '[]');
       existingEntries.push(...entries);
       localStorage.setItem('user_entries', JSON.stringify(existingEntries));
-      console.log('Payment entries saved (localStorage only):', entries);
+      console.log('   Payment entries saved (localStorage only):', entries.length);
+      
+      return { success: true, entries, savedToLocalStorage: true };
     }
-    
-    return { success: true, entries };
   } catch (error) {
-    console.error('Error saving payment to database:', error);
+    console.error('❌ Error saving payment to database:', error);
+    console.error('   Error stack:', error.stack);
     return { success: false, error: error.message };
   }
 }
