@@ -438,7 +438,8 @@ body {
   accent-color: #FFD700;
 }
 
-.number-item input[type="text"] {
+.number-item input[type="text"],
+.number-item input[type="tel"] {
   flex: 1;
   min-width: 0; /* Allow flex item to shrink below its content size */
   max-width: 100%;
@@ -466,7 +467,8 @@ body {
   cursor: not-allowed;
 }
 
-.number-item input[type="text"]:focus {
+.number-item input[type="text"]:focus,
+.number-item input[type="tel"]:focus {
   border-color: #FFD700;
   box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
 }

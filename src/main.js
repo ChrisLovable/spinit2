@@ -325,7 +325,7 @@ const completedButton = document.getElementById('completedButton');
 const numberGrid = document.getElementById('numberGrid');
 
 // Generate number selection UI (1-20)
-const selectedNumbers = new Map(); // Store selected numbers with names
+const selectedNumbers = new Map(); // Store selected numbers with {name, mobile}
 
 for (let i = 1; i <= 20; i++) {
   const numberItem = document.createElement('div');
@@ -343,9 +343,17 @@ for (let i = 1; i <= 20; i++) {
   
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
-  nameInput.placeholder = 'Enter name...';
+  nameInput.placeholder = 'Name (required)';
   nameInput.id = `name-${i}`;
   nameInput.dataset.number = i; // Store number for easy lookup
+  nameInput.required = true;
+  
+  const mobileInput = document.createElement('input');
+  mobileInput.type = 'tel';
+  mobileInput.placeholder = 'Mobile (required)';
+  mobileInput.id = `mobile-${i}`;
+  mobileInput.dataset.number = i; // Store number for easy lookup
+  mobileInput.required = true;
   
   checkbox.addEventListener('change', (e) => {
     // Don't allow checking if this number is already paid
@@ -354,7 +362,10 @@ for (let i = 1; i <= 20; i++) {
       return;
     }
     if (e.target.checked) {
-      selectedNumbers.set(i, nameInput.value || '');
+      selectedNumbers.set(i, {
+        name: nameInput.value.trim() || '',
+        mobile: mobileInput.value.trim() || ''
+      });
     } else {
       selectedNumbers.delete(i);
     }
@@ -368,7 +379,27 @@ for (let i = 1; i <= 20; i++) {
       return;
     }
     if (checkbox.checked) {
-      selectedNumbers.set(i, e.target.value);
+      const current = selectedNumbers.get(i) || { name: '', mobile: '' };
+      selectedNumbers.set(i, {
+        name: e.target.value.trim(),
+        mobile: current.mobile
+      });
+      updateCheckoutButton();
+    }
+  });
+  
+  mobileInput.addEventListener('input', (e) => {
+    // Don't allow editing if this is a paid entry
+    if (nameInput.classList.contains('paid-name')) {
+      e.target.value = mobileInput.dataset.paidMobile || '';
+      return;
+    }
+    if (checkbox.checked) {
+      const current = selectedNumbers.get(i) || { name: '', mobile: '' };
+      selectedNumbers.set(i, {
+        name: current.name,
+        mobile: e.target.value.trim()
+      });
       updateCheckoutButton();
     }
   });
@@ -376,15 +407,26 @@ for (let i = 1; i <= 20; i++) {
   numberItem.appendChild(checkbox);
   numberItem.appendChild(label);
   numberItem.appendChild(nameInput);
+  numberItem.appendChild(mobileInput);
   numberGrid.appendChild(numberItem);
 }
 
 function updateCheckoutButton() {
   const count = selectedNumbers.size;
+  
+  // Check if all selected numbers have both name and mobile filled
+  let allValid = true;
+  for (const [num, data] of selectedNumbers.entries()) {
+    if (!data.name || !data.name.trim() || !data.mobile || !data.mobile.trim()) {
+      allValid = false;
+      break;
+    }
+  }
+  
   checkoutButton.textContent = count > 0 
     ? `CHECKOUT (${count} selected)` 
     : 'CHECKOUT';
-  checkoutButton.disabled = count === 0;
+  checkoutButton.disabled = count === 0 || !allValid;
 }
 
 // Get ticket price from admin panel (displayed value)
@@ -509,14 +551,23 @@ function initializePayPal() {
         // Payment successful
         console.log('Payment completed:', details);
         
-        // Get current names from input fields (in case Map is out of sync)
-        const selectedNumbersWithNames = Array.from(selectedNumbers.entries()).map(([num, name]) => {
-          // Double-check by reading from the actual input field
+        // Get current names and mobile numbers from input fields (in case Map is out of sync)
+        const selectedNumbersWithNames = Array.from(selectedNumbers.entries()).map(([num, data]) => {
+          // Double-check by reading from the actual input fields
           const nameInput = document.getElementById(`name-${num}`);
-          const actualName = nameInput ? nameInput.value.trim() : (name || '');
+          const mobileInput = document.getElementById(`mobile-${num}`);
+          const actualName = nameInput ? nameInput.value.trim() : (data?.name || '');
+          const actualMobile = mobileInput ? mobileInput.value.trim() : (data?.mobile || '');
+          
+          // Validate both are filled
+          if (!actualName || !actualMobile) {
+            throw new Error(`Number ${num} is missing name or mobile number. Both are required.`);
+          }
+          
           return {
             number: num,
-            name: actualName || 'Unnamed'
+            name: actualName,
+            mobile: actualMobile
           };
         });
         
@@ -770,6 +821,7 @@ async function savePaymentToDatabase(paymentData, competitionId) {
       competition_id: validCompetitionId, // REQUIRED - cannot be null
       entry_number: entry.number,
       player_name: entry.name || 'Unnamed',
+      mobile_number: entry.mobile || '',
       payment_transaction_id: paymentData.transaction_id,
       payment_amount: paymentData.amount,
       payment_currency: paymentData.currency,
