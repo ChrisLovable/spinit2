@@ -505,6 +505,7 @@ body {
   margin-top: 10px;
   position: relative;
   overflow: hidden;
+  display: block; /* Ensure button is visible by default */
   /* 3D Dark Theme Styles */
   background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
   box-shadow: 

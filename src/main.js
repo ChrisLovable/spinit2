@@ -428,6 +428,11 @@ function updateCheckoutButton() {
     }
   }
   
+  // Update button text
+  checkoutButton.textContent = count > 0 
+    ? `CHECKOUT (${count} selected)` 
+    : 'CHECKOUT';
+  
   // Show/hide checkout button based on selection
   if (count === 0 || !allValid) {
     checkoutButton.style.display = 'none';
@@ -436,6 +441,7 @@ function updateCheckoutButton() {
     }
   } else {
     checkoutButton.style.display = 'block';
+    checkoutButton.disabled = false;
     if (paypalButtonsContainer) {
       paypalButtonsContainer.style.display = 'none'; // Hide PayPal until checkout is clicked
     }
