@@ -323,7 +323,6 @@ const checkoutButton = document.getElementById('checkoutButton');
 const adminButton = document.getElementById('adminButton');
 const completedButton = document.getElementById('completedButton');
 const numberGrid = document.getElementById('numberGrid');
-let paypalButtonsContainer = document.getElementById('paypal-button-container');
 
 // Generate number selection UI (1-20)
 const selectedNumbers = new Map(); // Store selected numbers with {name, mobile}
