@@ -753,15 +753,21 @@ async function savePaymentToDatabase(paymentData, competitionId) {
     console.log('   Competition ID type:', typeof competitionId);
     console.log('   Is temp ID?', competitionId && competitionId.startsWith('temp_'));
     
-    // Check if competition_id is a valid UUID or temp ID
-    // If it's a temp ID, set to null (since competition_id allows NULL in schema)
-    const validCompetitionId = (competitionId && !competitionId.startsWith('temp_') && competitionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i))
-      ? competitionId
-      : null;
+    // Competition ID is REQUIRED - cannot be null or temp
+    if (!competitionId || competitionId.trim() === '' || competitionId.startsWith('temp_')) {
+      throw new Error('Invalid competition ID. Competition title is required for ticket purchase.');
+    }
+    
+    // Validate UUID format
+    if (!competitionId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      throw new Error('Invalid competition ID format. Please select a valid competition.');
+    }
+    
+    const validCompetitionId = competitionId;
     
     // Prepare entries for database
     const entries = paymentData.selected_numbers.map(entry => ({
-      competition_id: validCompetitionId, // Use null if temp ID
+      competition_id: validCompetitionId, // REQUIRED - cannot be null
       entry_number: entry.number,
       player_name: entry.name || 'Unnamed',
       payment_transaction_id: paymentData.transaction_id,
