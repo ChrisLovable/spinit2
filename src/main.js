@@ -1742,11 +1742,14 @@ function updateAutoSpinCountdown() {
   const diff = autoSpinDateTime - now;
   
   if (diff <= 0) {
+    console.log('⏰ Countdown expired, hiding timer');
     countdownTimer.style.display = 'none';
     return;
   }
   
+  // Force display
   countdownTimer.style.display = 'block';
+  countdownTimer.style.visibility = 'visible';
   
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
