@@ -1779,8 +1779,14 @@ loadAndDisplayPaidPlayers();
 // Update paid names display on page load
 updatePaidNamesDisplay();
 
-// Load active competitions on page load
-loadActiveCompetitions();
+// Load active competitions on page load - wait for DOM to be ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => loadActiveCompetitions(), 500);
+  });
+} else {
+  setTimeout(() => loadActiveCompetitions(), 500);
+}
 
 // Show canvas/wheel by default
 if (canvas) {
