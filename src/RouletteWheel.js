@@ -604,7 +604,10 @@ export class ThemeParkWheel {
       // Extrude to create 3D slot
       const extrudeSettings = {
         depth: this.SLOT_DEPTH,
-        bevelEnabled: false
+        bevelEnabled: true,
+        bevelThickness: 0.05,
+        bevelSize: 0.04,
+        bevelSegments: 4
       };
       const slotGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
       slotGeometry.rotateX(-Math.PI / 2);
@@ -660,10 +663,10 @@ export class ThemeParkWheel {
       
       const edgeMaterial = new THREE.MeshStandardMaterial({
         color: 0xFFFFFF,
-        metalness: 0.8,
-        roughness: 0.2,
+        metalness: 0.95,
+        roughness: 0.1,
         emissive: 0xFFFFFF,
-        emissiveIntensity: 0.1
+        emissiveIntensity: 0.15
       });
       const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
       edge.position.y = -this.WHEEL_HEIGHT / 2 + this.SLOT_DEPTH;
