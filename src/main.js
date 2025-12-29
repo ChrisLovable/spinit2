@@ -1433,6 +1433,8 @@ adminForm.addEventListener('submit', async (e) => {
   
   // Save competition to database
   let competitionId = null;
+  let saveSuccess = false;
+  
   if (supabase) {
     try {
       const competitionData = {
@@ -1456,41 +1458,41 @@ adminForm.addEventListener('submit', async (e) => {
       if (error) {
         console.error('Error saving competition to Supabase:', error);
         alert('Error saving competition to database. Check console for details.');
+        return; // Don't proceed if save failed
       } else {
         console.log('✅ Competition saved to Supabase:', data);
         competitionId = data.id;
         formData.competition_id = competitionId;
+        saveSuccess = true;
       }
     } catch (err) {
       console.error('Error saving competition:', err);
-    }
-  }
-  
-  // Update the UI with the new prize info
-  updatePrizeInfo(formData);
-  
-  // Reload active competitions dropdown to include the new competition
-  // Wait for the competition to be saved and then reload the dropdown
-  if (competitionId) {
-    // Small delay to ensure database commit
-    await new Promise(resolve => setTimeout(resolve, 500));
-    await loadActiveCompetitions();
-    
-    // Select the newly created competition in the dropdown
-    const competitionSelect = document.getElementById('competitionSelect');
-    if (competitionSelect) {
-      competitionSelect.value = competitionId;
+      alert('Error saving competition. Please try again.');
+      return; // Don't proceed if save failed
     }
   } else {
-    // Still reload even if save failed (might have localStorage fallback)
-    await loadActiveCompetitions();
+    // Fallback: save to localStorage
+    updatePrizeInfo(formData);
+    saveSuccess = true;
   }
   
-  // Show success message
-  alert('Competition saved successfully!');
-  
-  // Close modal
-  adminModal.classList.remove('active');
+  // Only proceed if save was successful
+  if (saveSuccess) {
+    // Update the UI with the new prize info
+    updatePrizeInfo(formData);
+    
+    // Reload active competitions dropdown to include the new competition
+    if (competitionId) {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await loadActiveCompetitions();
+    }
+    
+    // Show success message
+    alert('Competition saved successfully!');
+    
+    // Close modal and return to main screen
+    adminModal.classList.remove('active');
+  }
 });
 
 // Helper function to convert file to base64 (handles HEIC conversion)
