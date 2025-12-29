@@ -2053,6 +2053,12 @@ async function loadActiveCompetitions() {
     // Load from Supabase if available - get ALL competitions, not just active status
     console.log('🔄 Loading competitions from database...');
     console.log('📊 Supabase client status:', supabase ? 'Initialized' : 'Not initialized');
+    console.log('📊 Environment check:', {
+      hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
+      hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+      urlValue: import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'MISSING',
+      keyValue: import.meta.env.VITE_SUPABASE_ANON_KEY ? 'Set' : 'MISSING'
+    });
     
     if (supabase) {
       try {
@@ -2065,18 +2071,52 @@ async function loadActiveCompetitions() {
         if (error) {
           console.error('❌ Error loading competitions from Supabase:', error);
           console.error('Error details:', JSON.stringify(error, null, 2));
+          console.error('Error code:', error.code);
+          console.error('Error message:', error.message);
+          console.error('Error hint:', error.hint);
+          
+          // Fallback to localStorage on error
+          console.warn('⚠️ Falling back to localStorage due to Supabase error');
+          const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+          if (prizeData.title) {
+            competitions = [{
+              id: prizeData.competition_id || 'temp',
+              title: prizeData.title,
+              status: 'active'
+            }];
+          }
         } else if (data) {
           competitions = data;
           console.log(`✅ Found ${competitions.length} total competitions in database`);
           console.log('Competitions:', competitions.map(c => ({ id: c.id, title: c.title, status: c.status })));
         } else {
           console.warn('⚠️ No data returned from Supabase query');
+          // Fallback to localStorage
+          const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+          if (prizeData.title) {
+            competitions = [{
+              id: prizeData.competition_id || 'temp',
+              title: prizeData.title,
+              status: 'active'
+            }];
+          }
         }
       } catch (err) {
         console.error('❌ Exception loading competitions:', err);
+        console.error('Exception stack:', err.stack);
+        // Fallback to localStorage
+        const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
+        if (prizeData.title) {
+          competitions = [{
+            id: prizeData.competition_id || 'temp',
+            title: prizeData.title,
+            status: 'active'
+          }];
+        }
       }
     } else {
       console.warn('⚠️ Supabase client not initialized, using localStorage fallback');
+      console.warn('⚠️ Make sure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in Vercel environment variables');
       // Fallback: use localStorage prizeData as single competition
       const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
       if (prizeData.title) {
