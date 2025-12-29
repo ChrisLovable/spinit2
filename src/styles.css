@@ -106,6 +106,7 @@ body {
   height: 80px !important; /* Fixed height - force it */
   min-height: 80px;
   max-height: 80px;
+  display: none; /* Hidden by default - only show 10 mins after last ticket sold */
   background: rgba(0, 0, 0, 0.8);
   border: 2px solid rgba(255, 215, 0, 0.5);
   border-radius: 12px;

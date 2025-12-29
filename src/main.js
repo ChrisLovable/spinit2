@@ -284,7 +284,7 @@ const themeParkWheel = new ThemeParkWheel(scene);
 
 // Scale wheel - increased by 25% from previous size
 // Previous: 1.125, New: 1.125 * 1.25 = 1.40625
-themeParkWheel.group.scale.set(1.40625, 1.40625, 1.40625);
+themeParkWheel.group.scale.set(1.75, 1.75, 1.75); // Increased wheel size
 
 // --- POSITION WHEEL JUST BELOW SPIN BUTTON ---
 // Convert 20 pixels to world units for movement
