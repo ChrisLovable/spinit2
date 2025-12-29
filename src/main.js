@@ -1466,8 +1466,14 @@ adminForm.addEventListener('submit', async (e) => {
   }
   
   try {
+    // Ensure title is not null or empty
+    if (!formData.title || formData.title.trim() === '') {
+      alert('Competition title is required and cannot be empty.');
+      return;
+    }
+    
     const competitionData = {
-      title: formData.title,
+      title: formData.title.trim(),
       photo: formData.photo,
       description: formData.description,
       prize_value: formData.value || 0,
@@ -1477,6 +1483,12 @@ adminForm.addEventListener('submit', async (e) => {
       spin_datetime: spinDateTime || new Date().toISOString(),
       status: 'active'
     };
+    
+    // Ensure title is set and not null
+    if (!competitionData.title) {
+      alert('Competition title cannot be null. Please enter a valid title.');
+      return;
+    }
     
     console.log('💾 Attempting to save competition to Supabase...', competitionData);
     
@@ -1492,8 +1504,20 @@ adminForm.addEventListener('submit', async (e) => {
       return; // Don't proceed if save failed
     } else {
       console.log('✅ Competition saved to Supabase:', data);
+      
+      // Competition ID must be set to the title value
+      // Since DB uses UUID for id, we'll use the title as the identifier
       competitionId = data.id;
       formData.competition_id = competitionId;
+      formData.title = data.title; // Ensure title matches what was saved
+      
+      // Validate that title is not null
+      if (!data.title || data.title.trim() === '') {
+        console.error('❌ Competition saved but title is null or empty!');
+        alert('Error: Competition was saved but title is missing. Please try again.');
+        return;
+      }
+      
       saveSuccess = true;
     }
   } catch (err) {
