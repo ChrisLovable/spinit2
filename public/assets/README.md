@@ -9,3 +9,4 @@ The pin texture should be:
 
 The file will be loaded from `/assets/pin.png` in the application.
 
+

@@ -136,3 +136,4 @@ PayPal Sandbox accepts these test card numbers:
 3. **Try guest checkout** with test card
 4. **Check PayPal status page** for SMS delivery issues
 
+

@@ -47,3 +47,4 @@ When a payment is successful, the following data is inserted into `user_entries`
 1. **competitions** - Competition details (populated by admin, not on payment)
 2. **user_entries** - Payment/entry data (populated on successful payment)
 
+

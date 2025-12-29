@@ -1207,11 +1207,11 @@ export class ThemeParkWheel {
     if (shouldStop) {
       // ✅ STOP IMMEDIATELY - FREEZE EVERYTHING BEFORE ANY MORE UPDATES
       this.isSpinning = false;
-
+      
       // ✅ hard stop velocities FIRST (before any calculations)
       this.wheelAngularVelocity = 0;
       this.ballAngularVelocity = 0;
-
+      
       // ✅ FREEZE wheelRotation at EXACT current value - NEVER UPDATE AGAIN
       // Store the frozen value AND lock wheelRotation itself
       const frozenRotation = this.wheelRotation;
@@ -1243,9 +1243,9 @@ export class ThemeParkWheel {
 
           // highlight immediately (use stored winner)
           this.winningSlotIndex = this.numberToSlotIndex[winner] ?? -1;
-          this.highlightWinningSlot();
-        }
-
+        this.highlightWinningSlot();
+      }
+      
       return true;
     }
     
@@ -1629,16 +1629,16 @@ export class ThemeParkWheel {
     
     // Get winning slot position for centered burst
     if (this.winningSlotIndex >= 0 && this.winningSlotIndex < this.slotMeshes.length) {
-      const winningSlot = this.slotMeshes[this.winningSlotIndex];
-      const slotIndex = winningSlot.userData.slotIndex;
-      const slotAngle = (Math.PI * 2) / this.NUM_SLOTS;
-      const slotCenterAngle = (slotIndex + 0.5) * slotAngle - Math.PI / 2;
-      const slotRadius = (this.OUTER_RADIUS + this.INNER_RADIUS) / 2;
-      
-      const burstX = Math.cos(slotCenterAngle) * slotRadius;
-      const burstY = this.WHEEL_HEIGHT / 2 + 0.5;
-      const burstZ = Math.sin(slotCenterAngle) * slotRadius;
-      
+    const winningSlot = this.slotMeshes[this.winningSlotIndex];
+    const slotIndex = winningSlot.userData.slotIndex;
+    const slotAngle = (Math.PI * 2) / this.NUM_SLOTS;
+    const slotCenterAngle = (slotIndex + 0.5) * slotAngle - Math.PI / 2;
+    const slotRadius = (this.OUTER_RADIUS + this.INNER_RADIUS) / 2;
+    
+    const burstX = Math.cos(slotCenterAngle) * slotRadius;
+    const burstY = this.WHEEL_HEIGHT / 2 + 0.5;
+    const burstZ = Math.sin(slotCenterAngle) * slotRadius;
+    
       // Giant center burst
       this.spawnBurst(new THREE.Vector3(burstX, burstY, burstZ), palette, 3500, 0.9, 4.0);
       
