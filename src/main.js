@@ -1779,24 +1779,101 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
-// Logo spin animation every 10 seconds
+// Logo spin animation using same physics as wheel
+let logoRotation = 0;
+let logoAngularVelocity = 0;
+let logoIsSpinning = false;
+let logoStartTime = null;
+let logoAnimationFrame = null;
+
 function startLogoSpin() {
   const logo = document.querySelector('.app-logo');
-  if (!logo) return;
+  if (!logo || logoIsSpinning) return;
   
-  // Remove any existing spin class
-  logo.classList.remove('spinning');
+  logoIsSpinning = true;
+  logoStartTime = Date.now();
   
-  // Force reflow to restart animation
-  void logo.offsetWidth;
+  // Calculate target rotation (multiple of 360 to end right side up)
+  const currentRotation = logoRotation % (Math.PI * 2);
+  const fullRotations = 5 + Math.random() * 3; // 5-8 full rotations
+  const targetRotation = logoRotation + (fullRotations * Math.PI * 2) - currentRotation;
   
-  // Add spin class
-  logo.classList.add('spinning');
+  // Calculate initial velocity using same physics as wheel
+  const friction = 0.990;
+  const airResistance = 0.999;
+  const frictionPerFrame = friction * airResistance;
+  const totalFrames = 60 * 4; // 4 seconds at 60fps
+  const rotationDistance = Math.abs(targetRotation - logoRotation);
   
-  // Remove class after animation completes
-  setTimeout(() => {
-    logo.classList.remove('spinning');
-  }, 4000);
+  // Find correct initial velocity (similar to wheel logic)
+  let testVel = 0.2;
+  let bestVel = testVel;
+  let bestError = Infinity;
+  
+  for (let attempt = 0; attempt < 50; attempt++) {
+    let dist = 0;
+    let vel = testVel;
+    for (let f = 0; f < totalFrames; f++) {
+      dist += vel;
+      vel *= frictionPerFrame;
+      if (vel < 0.0001) break;
+    }
+    
+    const error = Math.abs(dist - rotationDistance);
+    if (error < bestError) {
+      bestError = error;
+      bestVel = testVel;
+      if (error < 0.2) break;
+    }
+    
+    if (dist < rotationDistance) {
+      testVel *= 1.02;
+    } else {
+      testVel *= 0.98;
+    }
+  }
+  
+  logoAngularVelocity = bestVel;
+  
+  // Start animation loop
+  function animateLogo() {
+    if (!logoIsSpinning) return;
+    
+    const elapsed = Date.now() - logoStartTime;
+    const duration = 4000; // 4 seconds
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // Check if should stop
+    const shouldStop = progress >= 1 || (Math.abs(logoAngularVelocity) < 0.001 && elapsed > duration * 0.9);
+    
+    if (shouldStop) {
+      // Snap to final rotation (multiple of 360 degrees = right side up)
+      logoRotation = targetRotation;
+      logoAngularVelocity = 0;
+      logoIsSpinning = false;
+      logo.style.transform = `scale(1.3) rotate(${(logoRotation * 180 / Math.PI) % 360}deg)`;
+      return;
+    }
+    
+    // Apply friction (same as wheel)
+    logoAngularVelocity *= friction;
+    logoAngularVelocity *= airResistance;
+    
+    // Update rotation
+    logoRotation += logoAngularVelocity;
+    
+    // Normalize rotation
+    while (logoRotation > Math.PI * 4) logoRotation -= Math.PI * 2;
+    while (logoRotation < -Math.PI * 2) logoRotation += Math.PI * 2;
+    
+    // Apply rotation
+    const degrees = (logoRotation * 180 / Math.PI) % 360;
+    logo.style.transform = `scale(1.3) rotate(${degrees}deg)`;
+    
+    logoAnimationFrame = requestAnimationFrame(animateLogo);
+  }
+  
+  animateLogo();
 }
 
 // Start logo spin every 10 seconds

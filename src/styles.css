@@ -67,18 +67,6 @@ body {
   z-index: 1;
 }
 
-@keyframes logoSpin {
-  0% {
-    transform: scale(1.3) rotate(0deg);
-  }
-  100% {
-    transform: scale(1.3) rotate(360deg);
-  }
-}
-
-.app-logo.spinning {
-  animation: logoSpin 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
 
 .spin-button-container {
   position: relative;
