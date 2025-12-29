@@ -1964,29 +1964,55 @@ function updateAutoSpinCountdown() {
 // Load active competitions (not fully bought out)
 async function loadActiveCompetitions() {
   try {
+    console.log('🔄 Starting loadActiveCompetitions...');
+    
     const competitionSelect = document.getElementById('competitionSelect');
     const competitionSelectButton = document.getElementById('competitionSelectButton');
     const competitionSelectText = document.getElementById('competitionSelectText');
     const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
     
-    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) return;
+    console.log('📋 Elements found:', {
+      competitionSelect: !!competitionSelect,
+      competitionSelectButton: !!competitionSelectButton,
+      competitionSelectText: !!competitionSelectText,
+      competitionSelectDropdown: !!competitionSelectDropdown
+    });
+    
+    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) {
+      console.error('❌ Missing dropdown elements!');
+      return;
+    }
     
     let competitions = [];
     
     // Load from Supabase if available - get ALL competitions, not just active status
+    console.log('🔍 Checking Supabase connection...', { supabase: !!supabase });
+    
     if (supabase) {
-      const { data, error } = await supabase
-        .from('competitions')
-        .select('id, title, status')
-        .order('created_at', { ascending: false });
-      
-      if (!error && data) {
-        competitions = data;
-        console.log(`📋 Found ${competitions.length} total competitions in database`);
-      } else if (error) {
-        console.error('Error loading competitions:', error);
+      console.log('✅ Supabase client exists, querying database...');
+      try {
+        const { data, error } = await supabase
+          .from('competitions')
+          .select('id, title, status')
+          .order('created_at', { ascending: false });
+        
+        console.log('📊 Database query result:', { data, error });
+        
+        if (error) {
+          console.error('❌ Supabase query error:', error);
+          alert(`Error loading competitions: ${error.message}`);
+        } else if (data) {
+          competitions = data;
+          console.log(`✅ Found ${competitions.length} total competitions in database:`, competitions);
+        } else {
+          console.warn('⚠️ No data returned from Supabase query');
+        }
+      } catch (err) {
+        console.error('❌ Exception querying Supabase:', err);
+        alert(`Error loading competitions: ${err.message}`);
       }
     } else {
+      console.warn('⚠️ Supabase client not initialized!');
       // Fallback: use localStorage prizeData as single competition
       const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
       if (prizeData.title) {
@@ -1995,6 +2021,7 @@ async function loadActiveCompetitions() {
           title: prizeData.title,
           status: 'active'
         }];
+        console.log('📦 Using localStorage fallback:', competitions);
       }
     }
     
