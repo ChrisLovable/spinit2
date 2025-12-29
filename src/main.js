@@ -1796,7 +1796,7 @@ function startLogoSpin() {
   // Remove class after animation completes
   setTimeout(() => {
     logo.classList.remove('spinning');
-  }, 2000);
+  }, 4000);
 }
 
 // Start logo spin every 10 seconds
