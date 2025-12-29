@@ -970,9 +970,12 @@ async function updatePaidNamesDisplay() {
     
     // Filter only completed payments for current competition
     const currentCompetitionId = JSON.parse(localStorage.getItem('prizeData') || '{}').competition_id;
+    console.log('🔍 Filtering paid entries for competition ID:', currentCompetitionId);
     const currentCompetitionEntries = allPaidEntries.filter(entry => {
       const isCompleted = entry.payment_status === 'completed';
-      const matchesCompetition = !currentCompetitionId || entry.competition_id === currentCompetitionId || !entry.competition_id;
+      // Only show entries that match the current competition ID exactly
+      // If no competition ID is set, don't show any entries
+      const matchesCompetition = currentCompetitionId && entry.competition_id === currentCompetitionId;
       return isCompleted && matchesCompetition;
     });
     
