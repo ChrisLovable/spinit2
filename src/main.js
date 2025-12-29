@@ -1998,41 +1998,32 @@ async function loadActiveCompetitions() {
       }
     }
     
-    // Filter to only active competitions (not fully bought out)
-    const activeCompetitions = [];
-    console.log(`📋 Processing ${competitions.length} competitions from database`);
-    for (const comp of competitions) {
-      const isActive = await isCompetitionActive(comp.id);
-      console.log(`  - Competition "${comp.title}" (${comp.id}): status=${comp.status}, isActive=${isActive}`);
-      if (isActive) {
-        activeCompetitions.push(comp);
-      }
-    }
-    
-    console.log(`✅ Filtered to ${activeCompetitions.length} active competitions (not fully bought out)`);
+    // Use ALL competitions from database - no filtering
+    const allCompetitions = competitions;
+    console.log(`📋 Loading ${allCompetitions.length} competitions from database into dropdown`);
     
     // Populate hidden select and custom dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
     competitionSelectDropdown.innerHTML = '';
     
-    if (activeCompetitions.length === 0) {
-      competitionSelect.innerHTML = '<option value="">No active competitions</option>';
-      competitionSelectText.textContent = 'No active competitions';
+    if (allCompetitions.length === 0) {
+      competitionSelect.innerHTML = '<option value="">No competitions</option>';
+      competitionSelectText.textContent = 'No competitions';
       const option = document.createElement('div');
       option.className = 'custom-dropdown-option';
       option.setAttribute('data-value', '');
-      option.textContent = 'No active competitions';
+      option.textContent = 'No competitions';
       competitionSelectDropdown.appendChild(option);
-      console.log('⚠️ No active competitions found in dropdown');
+      console.log('⚠️ No competitions found in database');
     } else {
       // Sort by title alphabetically
-      activeCompetitions.sort((a, b) => {
+      allCompetitions.sort((a, b) => {
         const titleA = (a.title || '').toLowerCase();
         const titleB = (b.title || '').toLowerCase();
         return titleA.localeCompare(titleB);
       });
       
-      activeCompetitions.forEach(comp => {
+      allCompetitions.forEach(comp => {
         // Add to hidden select
         const option = document.createElement('option');
         option.value = comp.id;
@@ -2048,14 +2039,14 @@ async function loadActiveCompetitions() {
       });
       
       // Set default selection
-      if (activeCompetitions.length > 0) {
-        const firstComp = activeCompetitions[0];
+      if (allCompetitions.length > 0) {
+        const firstComp = allCompetitions[0];
         competitionSelect.value = firstComp.id;
         competitionSelectText.textContent = firstComp.title;
       }
     }
     
-    console.log('Loaded active competitions:', activeCompetitions.length);
+    console.log(`✅ Loaded ${allCompetitions.length} competitions from database into dropdown`);
   } catch (error) {
     console.error('Error loading competitions:', error);
   }

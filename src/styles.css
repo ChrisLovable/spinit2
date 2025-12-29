@@ -223,7 +223,7 @@ body {
   padding: 14px 20px;
   font-size: 16px;
   font-weight: bold;
-  color: #FFFFFF;
+  color: #FFFFFF !important;
   border: none;
   border-radius: 12px;
   cursor: pointer;
@@ -239,6 +239,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.custom-dropdown-button span {
+  color: #FFFFFF !important;
+}
   /* 3D Dark Theme Styles - Black to Neon Green Gradient */
   background: linear-gradient(145deg, #000000 0%, #00FF00 50%, #000000 100%);
   box-shadow: 
