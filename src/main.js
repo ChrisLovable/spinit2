@@ -1779,113 +1779,6 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
-// Logo spin animation using same physics as wheel
-let logoRotation = 0;
-let logoAngularVelocity = 0;
-let logoIsSpinning = false;
-let logoStartTime = null;
-let logoAnimationFrame = null;
-
-function startLogoSpin() {
-  const logo = document.querySelector('.app-logo');
-  if (!logo || logoIsSpinning) return;
-  
-  logoIsSpinning = true;
-  logoStartTime = Date.now();
-  
-  // Calculate target rotation (multiple of 360 to end right side up)
-  const currentRotation = logoRotation % (Math.PI * 2);
-  const fullRotations = 5 + Math.random() * 3; // 5-8 full rotations
-  const targetRotation = logoRotation + (fullRotations * Math.PI * 2) - currentRotation;
-  
-  // Calculate initial velocity using same physics as wheel
-  const friction = 0.990;
-  const airResistance = 0.999;
-  const frictionPerFrame = friction * airResistance;
-  const totalFrames = 60 * 4; // 4 seconds at 60fps
-  const rotationDistance = Math.abs(targetRotation - logoRotation);
-  
-  // Find correct initial velocity (similar to wheel logic)
-  let testVel = 0.2;
-  let bestVel = testVel;
-  let bestError = Infinity;
-  
-  for (let attempt = 0; attempt < 50; attempt++) {
-    let dist = 0;
-    let vel = testVel;
-    for (let f = 0; f < totalFrames; f++) {
-      dist += vel;
-      vel *= frictionPerFrame;
-      if (vel < 0.0001) break;
-    }
-    
-    const error = Math.abs(dist - rotationDistance);
-    if (error < bestError) {
-      bestError = error;
-      bestVel = testVel;
-      if (error < 0.2) break;
-    }
-    
-    if (dist < rotationDistance) {
-      testVel *= 1.02;
-    } else {
-      testVel *= 0.98;
-    }
-  }
-  
-  logoAngularVelocity = bestVel;
-  
-  // Start animation loop
-  function animateLogo() {
-    if (!logoIsSpinning) return;
-    
-    const elapsed = Date.now() - logoStartTime;
-    const duration = 4000; // 4 seconds
-    const progress = Math.min(elapsed / duration, 1);
-    
-    // Check if should stop
-    const shouldStop = progress >= 1 || (Math.abs(logoAngularVelocity) < 0.001 && elapsed > duration * 0.9);
-    
-    if (shouldStop) {
-      // Snap to final rotation (multiple of 360 degrees = right side up)
-      logoRotation = targetRotation;
-      logoAngularVelocity = 0;
-      logoIsSpinning = false;
-      logo.style.transform = `scale(1.3) rotate(${(logoRotation * 180 / Math.PI) % 360}deg)`;
-      return;
-    }
-    
-    // Apply friction (same as wheel)
-    logoAngularVelocity *= friction;
-    logoAngularVelocity *= airResistance;
-    
-    // Update rotation
-    logoRotation += logoAngularVelocity;
-    
-    // Normalize rotation
-    while (logoRotation > Math.PI * 4) logoRotation -= Math.PI * 2;
-    while (logoRotation < -Math.PI * 2) logoRotation += Math.PI * 2;
-    
-    // Apply rotation
-    const degrees = (logoRotation * 180 / Math.PI) % 360;
-    logo.style.transform = `scale(1.3) rotate(${degrees}deg)`;
-    
-    logoAnimationFrame = requestAnimationFrame(animateLogo);
-  }
-  
-  animateLogo();
-}
-
-// Start logo spin every 10 seconds
-setInterval(() => {
-  startLogoSpin();
-}, 10000);
-
-// Initial spin after page load
-setTimeout(() => {
-  startLogoSpin();
-}, 1000);
-
 // Restore scheduled auto-spin countdown (so refresh doesn't lose it)
 const savedAutoSpin = localStorage.getItem('autoSpinDateTime');
 if (savedAutoSpin) {
@@ -2071,57 +1964,42 @@ function updateAutoSpinCountdown() {
 // Load active competitions (not fully bought out)
 async function loadActiveCompetitions() {
   try {
-    console.log('🔄 Starting loadActiveCompetitions...');
-    
     const competitionSelect = document.getElementById('competitionSelect');
     const competitionSelectButton = document.getElementById('competitionSelectButton');
     const competitionSelectText = document.getElementById('competitionSelectText');
     const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
     
-    console.log('📋 Elements found:', {
-      competitionSelect: !!competitionSelect,
-      competitionSelectButton: !!competitionSelectButton,
-      competitionSelectText: !!competitionSelectText,
-      competitionSelectDropdown: !!competitionSelectDropdown
-    });
-    
-    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) {
-      console.error('❌ Missing dropdown elements!');
-      return;
-    }
+    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) return;
     
     let competitions = [];
     
-    // Load from Supabase if available - get ALL competitions (active + NULL status), exclude only completed
-    console.log('🔍 Checking Supabase connection...', { supabase: !!supabase });
+    // Load from Supabase if available - get ALL competitions, not just active status
+    console.log('🔄 Loading competitions from database...');
+    console.log('📊 Supabase client status:', supabase ? 'Initialized' : 'Not initialized');
     
     if (supabase) {
-      console.log('✅ Supabase client exists, querying database...');
       try {
-        // Get competitions with status = 'active' OR status = NULL (exclude only 'completed')
+        console.log('📡 Querying Supabase competitions table...');
         const { data, error } = await supabase
           .from('competitions')
           .select('id, title, status')
-          .or('status.eq.active,status.is.null')
           .order('created_at', { ascending: false });
         
-        console.log('📊 Database query result:', { data, error });
-        
         if (error) {
-          console.error('❌ Supabase query error:', error);
-          alert(`Error loading competitions: ${error.message}`);
+          console.error('❌ Error loading competitions from Supabase:', error);
+          console.error('Error details:', JSON.stringify(error, null, 2));
         } else if (data) {
           competitions = data;
-          console.log(`✅ Found ${competitions.length} competitions (active + NULL status) in database:`, competitions);
+          console.log(`✅ Found ${competitions.length} total competitions in database`);
+          console.log('Competitions:', competitions.map(c => ({ id: c.id, title: c.title, status: c.status })));
         } else {
           console.warn('⚠️ No data returned from Supabase query');
         }
       } catch (err) {
-        console.error('❌ Exception querying Supabase:', err);
-        alert(`Error loading competitions: ${err.message}`);
+        console.error('❌ Exception loading competitions:', err);
       }
     } else {
-      console.warn('⚠️ Supabase client not initialized!');
+      console.warn('⚠️ Supabase client not initialized, using localStorage fallback');
       // Fallback: use localStorage prizeData as single competition
       const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
       if (prizeData.title) {
@@ -2130,26 +2008,12 @@ async function loadActiveCompetitions() {
           title: prizeData.title,
           status: 'active'
         }];
-        console.log('📦 Using localStorage fallback:', competitions);
       }
     }
     
-    // Filter to only active competitions (not fully bought out - haven't sold all 20 tickets)
-    const activeCompetitions = [];
-    console.log(`📋 Processing ${competitions.length} competitions from database`);
-    for (const comp of competitions) {
-      const isActive = await isCompetitionActive(comp.id);
-      console.log(`  - Competition "${comp.title}" (${comp.id}): status=${comp.status}, isActive=${isActive} (not fully bought out)`);
-      if (isActive) {
-        activeCompetitions.push(comp);
-      }
-    }
-    
-    console.log(`✅ Filtered to ${activeCompetitions.length} active competitions (not fully bought out)`);
-    
-    // Use filtered active competitions
-    const allCompetitions = activeCompetitions;
-    console.log(`📋 Loading ${allCompetitions.length} active competitions into dropdown`);
+    // Use ALL competitions from database - no filtering
+    const allCompetitions = competitions;
+    console.log(`📋 Loading ${allCompetitions.length} competitions from database into dropdown`);
     
     // Populate hidden select and custom dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
