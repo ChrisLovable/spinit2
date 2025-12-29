@@ -2066,48 +2066,84 @@ async function loadActiveCompetitions() {
 }
 
 // Initialize custom dropdown functionality
+let dropdownInitialized = false;
+
 function initializeCustomDropdown() {
+  // Prevent multiple initializations
+  if (dropdownInitialized) {
+    console.log('Dropdown already initialized, skipping...');
+    return;
+  }
+
   const competitionSelectButton = document.getElementById('competitionSelectButton');
   const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
   const competitionSelectText = document.getElementById('competitionSelectText');
   const customDropdown = document.querySelector('.custom-dropdown');
   const competitionSelect = document.getElementById('competitionSelect');
 
+  console.log('🔍 Checking dropdown elements:', {
+    button: !!competitionSelectButton,
+    dropdown: !!competitionSelectDropdown,
+    text: !!competitionSelectText,
+    container: !!customDropdown,
+    select: !!competitionSelect
+  });
+
   if (!competitionSelectButton || !competitionSelectDropdown || !competitionSelectText || !customDropdown || !competitionSelect) {
-    console.warn('⚠️ Custom dropdown elements not found, retrying...');
+    console.warn('⚠️ Custom dropdown elements not found, retrying in 500ms...');
     setTimeout(initializeCustomDropdown, 500);
     return;
   }
 
   console.log('✅ Initializing custom dropdown functionality');
 
+  // Remove any existing listeners by cloning and replacing
+  const newButton = competitionSelectButton.cloneNode(true);
+  competitionSelectButton.parentNode.replaceChild(newButton, competitionSelectButton);
+  
+  // Get fresh reference after clone
+  const button = document.getElementById('competitionSelectButton');
+  const dropdown = document.getElementById('competitionSelectDropdown');
+  const textSpan = document.getElementById('competitionSelectText');
+
   // Toggle dropdown on button click
-  competitionSelectButton.addEventListener('click', (e) => {
+  button.addEventListener('click', function(e) {
+    e.preventDefault();
     e.stopPropagation();
-    customDropdown.classList.toggle('active');
-    console.log('Dropdown toggled, active:', customDropdown.classList.contains('active'));
-  });
+    console.log('🖱️ Dropdown button clicked!');
+    const isActive = customDropdown.classList.contains('active');
+    if (isActive) {
+      customDropdown.classList.remove('active');
+      console.log('Dropdown closed');
+    } else {
+      customDropdown.classList.add('active');
+      console.log('Dropdown opened');
+    }
+  }, true); // Use capture phase
 
   // Handle option selection
-  competitionSelectDropdown.addEventListener('click', (e) => {
+  dropdown.addEventListener('click', function(e) {
+    e.stopPropagation();
     const option = e.target.closest('.custom-dropdown-option');
     if (option) {
       const value = option.getAttribute('data-value');
       const text = option.textContent;
 
-      console.log('Option selected:', { value, text });
+      console.log('✅ Option selected:', { value, text });
 
       // Update hidden select
       if (competitionSelect) {
         competitionSelect.value = value;
-        competitionSelect.dispatchEvent(new Event('change'));
+        competitionSelect.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
       // Update button text
-      competitionSelectText.textContent = text;
+      if (textSpan) {
+        textSpan.textContent = text;
+      }
 
       // Update selected state
-      competitionSelectDropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+      dropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
         opt.classList.remove('selected');
       });
       option.classList.add('selected');
@@ -2115,25 +2151,33 @@ function initializeCustomDropdown() {
       // Close dropdown
       customDropdown.classList.remove('active');
     }
-  });
+  }, true); // Use capture phase
 
   // Close dropdown when clicking outside
-  document.addEventListener('click', (e) => {
-    if (!customDropdown.contains(e.target)) {
+  const outsideClickHandler = function(e) {
+    if (!customDropdown.contains(e.target) && !button.contains(e.target)) {
       customDropdown.classList.remove('active');
     }
-  });
+  };
+  document.addEventListener('click', outsideClickHandler, true);
 
-  console.log('✅ Custom dropdown event listeners attached');
+  dropdownInitialized = true;
+  console.log('✅ Custom dropdown event listeners attached successfully');
 }
 
-// Initialize dropdown after DOM is ready
+// Initialize dropdown after DOM is ready and competitions are loaded
+function setupDropdownAfterLoad() {
+  // Wait a bit for loadActiveCompetitions to complete
+  setTimeout(() => {
+    initializeCustomDropdown();
+  }, 500);
+}
+
+// Initialize when DOM is ready
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(initializeCustomDropdown, 100);
-  });
+  document.addEventListener('DOMContentLoaded', setupDropdownAfterLoad);
 } else {
-  setTimeout(initializeCustomDropdown, 100);
+  setupDropdownAfterLoad();
 }
 
 // Check if competition is active (not fully bought out)
