@@ -1414,68 +1414,92 @@ adminPhotoInput.addEventListener('change', async (e) => {
 adminForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   
-  // Get date and time values
+  console.log('📝 Admin form submitted');
+  
+  // Validate form fields
+  const title = document.getElementById('adminTitle').value.trim();
+  const description = document.getElementById('adminDescription').value.trim();
   const spinDate = document.getElementById('adminSpinDate').value;
   const spinTime = document.getElementById('adminSpinTime').value;
   
+  if (!title) {
+    alert('Please enter a competition title.');
+    return;
+  }
+  
+  if (!description) {
+    alert('Please enter a description.');
+    return;
+  }
+  
+  if (!spinDate || !spinTime) {
+    alert('Please select a spin date and time.');
+    return;
+  }
+  
+  // Get date and time values
   // Combine date and time into a single datetime string
   const spinDateTime = spinDate && spinTime ? `${spinDate}T${spinTime}:00` : null;
   
   const formData = {
-    title: document.getElementById('adminTitle').value,
+    title: title,
     photo: adminPhotoInput.files[0] ? await fileToBase64(adminPhotoInput.files[0]) : null,
-    description: document.getElementById('adminDescription').value,
-    value: parseFloat(document.getElementById('adminValue').value),
-    price: parseFloat(document.getElementById('adminPrice').value),
+    description: description,
+    value: parseFloat(document.getElementById('adminValue').value) || 0,
+    price: parseFloat(document.getElementById('adminPrice').value) || 50,
     spinDate: spinDate,
     spinTime: spinTime,
     spinDateTime: spinDateTime,
     timestamp: new Date().toISOString()
   };
   
+  console.log('📝 Form data prepared:', { title: formData.title, description: formData.description });
+  
   // Save competition to database
   let competitionId = null;
   let saveSuccess = false;
   
-  if (supabase) {
-    try {
-      const competitionData = {
-        title: formData.title,
-        photo: formData.photo,
-        description: formData.description,
-        prize_value: formData.value || 0,
-        ticket_price: formData.price || 50,
-        spin_date: spinDate,
-        spin_time: spinTime,
-        spin_datetime: spinDateTime || new Date().toISOString(),
-        status: 'active'
-      };
-      
-      const { data, error } = await supabase
-        .from('competitions')
-        .insert(competitionData)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Error saving competition to Supabase:', error);
-        alert('Error saving competition to database. Check console for details.');
-        return; // Don't proceed if save failed
-      } else {
-        console.log('✅ Competition saved to Supabase:', data);
-        competitionId = data.id;
-        formData.competition_id = competitionId;
-        saveSuccess = true;
-      }
-    } catch (err) {
-      console.error('Error saving competition:', err);
-      alert('Error saving competition. Please try again.');
+  if (!supabase) {
+    console.error('❌ Supabase client not initialized!');
+    alert('Database connection not available. Please check your Supabase configuration.');
+    return;
+  }
+  
+  try {
+    const competitionData = {
+      title: formData.title,
+      photo: formData.photo,
+      description: formData.description,
+      prize_value: formData.value || 0,
+      ticket_price: formData.price || 50,
+      spin_date: spinDate,
+      spin_time: spinTime,
+      spin_datetime: spinDateTime || new Date().toISOString(),
+      status: 'active'
+    };
+    
+    console.log('💾 Attempting to save competition to Supabase...', competitionData);
+    
+    const { data, error } = await supabase
+      .from('competitions')
+      .insert(competitionData)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('❌ Error saving competition to Supabase:', error);
+      alert(`Error saving competition to database: ${error.message}. Check console for details.`);
       return; // Don't proceed if save failed
+    } else {
+      console.log('✅ Competition saved to Supabase:', data);
+      competitionId = data.id;
+      formData.competition_id = competitionId;
+      saveSuccess = true;
     }
-  } else {
-    // Fallback: save to localStorage
-    updatePrizeInfo(formData);
-    saveSuccess = true;
+  } catch (err) {
+    console.error('❌ Exception saving competition:', err);
+    alert(`Error saving competition: ${err.message}. Please try again.`);
+    return; // Don't proceed if save failed
   }
   
   // Only proceed if save was successful
