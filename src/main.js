@@ -803,8 +803,15 @@ async function getOrCreateCompetitionId() {
     const selectedOption = competitionSelect.options[competitionSelect.selectedIndex];
     const competitionTitle = selectedOption ? selectedOption.textContent : '';
     
+    // Competition title cannot be null - must have a value
     if (!competitionTitle || competitionTitle.trim() === '') {
-      throw new Error('Competition title is required. Please select a valid competition.');
+      throw new Error('Competition title is required and cannot be null. Please select a valid competition.');
+    }
+    
+    // Competition ID must match the title (title is the identifier)
+    // Validate that the selected competition has a valid title
+    if (!selectedCompetitionId || selectedCompetitionId.trim() === '') {
+      throw new Error('Competition ID cannot be null. Please select a valid competition.');
     }
     
     console.log('✅ Selected competition:', {
@@ -813,9 +820,16 @@ async function getOrCreateCompetitionId() {
     });
     
     // Update prizeData with selected competition
+    // Ensure both competition_id and title are set and not null
     const prizeData = JSON.parse(localStorage.getItem('prizeData') || '{}');
     prizeData.competition_id = selectedCompetitionId;
     prizeData.title = competitionTitle;
+    
+    // Validate both are not null
+    if (!prizeData.competition_id || !prizeData.title || prizeData.title.trim() === '') {
+      throw new Error('Competition ID and title cannot be null. Please select a valid competition.');
+    }
+    
     localStorage.setItem('prizeData', JSON.stringify(prizeData));
     
     return selectedCompetitionId;
