@@ -75,7 +75,7 @@ body {
 }
 
 .app-logo.spinning {
-  animation: logoSpin 4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation: logoSpin 4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .spin-button-container {
