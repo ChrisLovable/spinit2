@@ -2433,7 +2433,7 @@ async function loadCompletedCompetitions() {
     if (supabase) {
       const { data, error } = await supabase
         .from('competitions')
-        .select('*')
+        .select('id, title, photo, description, prize_value, ticket_price, spin_date, spin_time, spin_datetime, status, winning_number, winner_name, created_at, updated_at')
         .order('created_at', { ascending: false });
       
       if (!error && data) {

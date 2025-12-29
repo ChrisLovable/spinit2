@@ -1411,12 +1411,22 @@ body {
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.3);
+  min-height: 150px;
 }
 
 .completed-card-photo img {
+  width: 100%;
   max-width: 100%;
   max-height: 200px;
   object-fit: contain;
+  border-radius: 8px;
+}
+
+.completed-card-photo .photo-placeholder {
+  color: #00FF00;
+  font-size: 24px;
+  padding: 20px;
+  text-align: center;
 }
 
 .completed-card-description {
