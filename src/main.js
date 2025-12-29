@@ -2019,12 +2019,24 @@ function updateAutoSpinCountdown() {
 // Load active competitions (not fully bought out)
 async function loadActiveCompetitions() {
   try {
+    console.log('🔄 loadActiveCompetitions() called');
     const competitionSelect = document.getElementById('competitionSelect');
     const competitionSelectButton = document.getElementById('competitionSelectButton');
     const competitionSelectText = document.getElementById('competitionSelectText');
     const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
     
-    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) return;
+    console.log('📋 DOM elements check:', {
+      competitionSelect: !!competitionSelect,
+      competitionSelectButton: !!competitionSelectButton,
+      competitionSelectText: !!competitionSelectText,
+      competitionSelectDropdown: !!competitionSelectDropdown
+    });
+    
+    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) {
+      console.error('❌ Required DOM elements not found, retrying in 1 second...');
+      setTimeout(() => loadActiveCompetitions(), 1000);
+      return;
+    }
     
     let competitions = [];
     
