@@ -1782,9 +1782,9 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
-// Hide canvas/wheel by default - only show when auto-spin is scheduled
+// Show canvas/wheel by default
 if (canvas) {
-  canvas.style.display = 'none';
+  canvas.style.display = 'block';
 }
 
 // Restore scheduled auto-spin countdown (so refresh doesn't lose it)
