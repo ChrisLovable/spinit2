@@ -1470,7 +1470,21 @@ adminForm.addEventListener('submit', async (e) => {
   updatePrizeInfo(formData);
   
   // Reload active competitions dropdown to include the new competition
-  loadActiveCompetitions();
+  // Wait for the competition to be saved and then reload the dropdown
+  if (competitionId) {
+    // Small delay to ensure database commit
+    await new Promise(resolve => setTimeout(resolve, 500));
+    await loadActiveCompetitions();
+    
+    // Select the newly created competition in the dropdown
+    const competitionSelect = document.getElementById('competitionSelect');
+    if (competitionSelect) {
+      competitionSelect.value = competitionId;
+    }
+  } else {
+    // Still reload even if save failed (might have localStorage fallback)
+    await loadActiveCompetitions();
+  }
   
   // Show success message
   alert('Competition saved successfully!');
