@@ -1482,10 +1482,11 @@ adminForm.addEventListener('submit', async (e) => {
     updatePrizeInfo(formData);
     
     // Reload active competitions dropdown to include the new competition
-    if (competitionId) {
-      await new Promise(resolve => setTimeout(resolve, 300));
-      await loadActiveCompetitions();
-    }
+    // Wait longer to ensure database commit is complete
+    console.log('🔄 Refreshing competitions dropdown after save...');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    await loadActiveCompetitions();
+    console.log('✅ Competitions dropdown refreshed');
     
     // Show success message
     alert('Competition saved successfully!');
@@ -1848,17 +1849,22 @@ async function loadActiveCompetitions() {
     
     // Filter to only active competitions (not fully bought out)
     const activeCompetitions = [];
+    console.log(`📋 Found ${competitions.length} competitions with status 'active'`);
     for (const comp of competitions) {
       const isActive = await isCompetitionActive(comp.id);
+      console.log(`  - Competition "${comp.title}" (${comp.id}): isActive=${isActive}`);
       if (isActive) {
         activeCompetitions.push(comp);
       }
     }
     
+    console.log(`✅ Filtered to ${activeCompetitions.length} active competitions`);
+    
     // Populate dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
     if (activeCompetitions.length === 0) {
       competitionSelect.innerHTML = '<option value="">No active competitions</option>';
+      console.log('⚠️ No active competitions found in dropdown');
     } else {
       // Sort by title alphabetically
       activeCompetitions.sort((a, b) => {
