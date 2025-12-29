@@ -27,7 +27,16 @@
     <!-- Competition Selector - Second -->
     <div class="competition-selector">
       <label for="competitionSelect">Select Competition:</label>
-      <select id="competitionSelect" class="competition-dropdown">
+      <div class="custom-dropdown">
+        <button id="competitionSelectButton" class="custom-dropdown-button" type="button">
+          <span id="competitionSelectText">Loading competitions...</span>
+          <span class="custom-dropdown-arrow">▼</span>
+        </button>
+        <div id="competitionSelectDropdown" class="custom-dropdown-menu">
+          <div class="custom-dropdown-option" data-value="">Loading competitions...</div>
+        </div>
+      </div>
+      <select id="competitionSelect" style="display: none;" aria-hidden="true">
         <option value="">Loading competitions...</option>
       </select>
     </div>

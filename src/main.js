@@ -1893,7 +1893,11 @@ function updateAutoSpinCountdown() {
 async function loadActiveCompetitions() {
   try {
     const competitionSelect = document.getElementById('competitionSelect');
-    if (!competitionSelect) return;
+    const competitionSelectButton = document.getElementById('competitionSelectButton');
+    const competitionSelectText = document.getElementById('competitionSelectText');
+    const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
+    
+    if (!competitionSelect || !competitionSelectButton || !competitionSelectText || !competitionSelectDropdown) return;
     
     let competitions = [];
     
@@ -1933,10 +1937,18 @@ async function loadActiveCompetitions() {
     
     console.log(`✅ Filtered to ${activeCompetitions.length} active competitions`);
     
-    // Populate dropdown - sorted by title alphabetically
+    // Populate hidden select and custom dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
+    competitionSelectDropdown.innerHTML = '';
+    
     if (activeCompetitions.length === 0) {
       competitionSelect.innerHTML = '<option value="">No active competitions</option>';
+      competitionSelectText.textContent = 'No active competitions';
+      const option = document.createElement('div');
+      option.className = 'custom-dropdown-option';
+      option.setAttribute('data-value', '');
+      option.textContent = 'No active competitions';
+      competitionSelectDropdown.appendChild(option);
       console.log('⚠️ No active competitions found in dropdown');
     } else {
       // Sort by title alphabetically
@@ -1947,11 +1959,26 @@ async function loadActiveCompetitions() {
       });
       
       activeCompetitions.forEach(comp => {
+        // Add to hidden select
         const option = document.createElement('option');
         option.value = comp.id;
         option.textContent = comp.title;
         competitionSelect.appendChild(option);
+        
+        // Add to custom dropdown
+        const customOption = document.createElement('div');
+        customOption.className = 'custom-dropdown-option';
+        customOption.setAttribute('data-value', comp.id);
+        customOption.textContent = comp.title;
+        competitionSelectDropdown.appendChild(customOption);
       });
+      
+      // Set default selection
+      if (activeCompetitions.length > 0) {
+        const firstComp = activeCompetitions[0];
+        competitionSelect.value = firstComp.id;
+        competitionSelectText.textContent = firstComp.title;
+      }
     }
     
     console.log('Loaded active competitions:', activeCompetitions.length);
