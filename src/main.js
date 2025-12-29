@@ -1481,9 +1481,10 @@ adminForm.addEventListener('submit', async (e) => {
     // Update the UI with the new prize info
     updatePrizeInfo(formData);
     
-    // Reload active competitions dropdown to include the new competition
+    // Always reload active competitions dropdown to include the new competition
     // Wait longer to ensure database commit is complete
     console.log('🔄 Refreshing competitions dropdown after save...');
+    console.log('📝 Saved competition ID:', competitionId);
     await new Promise(resolve => setTimeout(resolve, 1000));
     await loadActiveCompetitions();
     console.log('✅ Competitions dropdown refreshed');
