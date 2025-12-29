@@ -2338,15 +2338,19 @@ async function loadCompetitionDetails(competitionId) {
     // Update the UI
     updatePrizeInfo(competitionData);
 
-    // Update localStorage with selected competition
+    // Update localStorage with selected competition FIRST, before updating display
     const prizeData = {
       ...competitionData,
       competition_id: competitionId
     };
     localStorage.setItem('prizeData', JSON.stringify(prizeData));
+    console.log('💾 Updated localStorage prizeData with competition_id:', competitionId);
+
+    // Small delay to ensure localStorage is updated
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     // Update paid names display for this competition
-    console.log('🔄 Updating paid names display...');
+    console.log('🔄 Updating paid names display for competition:', competitionId);
     await updatePaidNamesDisplay();
 
     // Update paid players display
