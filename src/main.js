@@ -1687,6 +1687,16 @@ if (savedAutoSpin) {
   const dt = new Date(savedAutoSpin);
   if (!isNaN(dt.getTime()) && dt > new Date()) {
     autoSpinDateTime = dt;
+    
+    // Show countdown and wheel if auto-spin is scheduled
+    const countdownTimer = document.getElementById('countdownTimer');
+    if (countdownTimer) {
+      countdownTimer.style.display = 'flex';
+    }
+    if (canvas) {
+      canvas.style.display = 'block';
+    }
+    
     startCountdown();
 
     // Also restore the actual auto-spin timeout
