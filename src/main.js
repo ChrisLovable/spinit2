@@ -2071,12 +2071,19 @@ async function loadActiveCompetitions() {
     const activeCompetitions = [];
     
     for (const comp of competitions) {
-      const isActive = await isCompetitionActive(comp.id);
-      if (isActive) {
+      try {
+        const isActive = await isCompetitionActive(comp.id);
+        if (isActive) {
+          activeCompetitions.push(comp);
+          console.log(`✅ Competition "${comp.title}" is active (has unsold tickets)`);
+        } else {
+          console.log(`❌ Competition "${comp.title}" is NOT active (all 20 tickets sold)`);
+        }
+      } catch (err) {
+        console.error(`❌ Error checking competition "${comp.title}":`, err);
+        // If there's an error checking, assume it's active to be safe
         activeCompetitions.push(comp);
-        console.log(`✅ Competition "${comp.title}" is active (has unsold tickets)`);
-      } else {
-        console.log(`❌ Competition "${comp.title}" is NOT active (all 20 tickets sold)`);
+        console.log(`⚠️ Assuming competition "${comp.title}" is active due to check error`);
       }
     }
     
