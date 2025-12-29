@@ -613,10 +613,12 @@ export class ThemeParkWheel {
       // Main slot with enhanced 3D material - roulette style
       const slotMaterial = new THREE.MeshStandardMaterial({
         color: slotColor,
-        roughness: 0.5,
-        metalness: 0.3,
+        roughness: 0.3,
+        metalness: 0.6,
         emissive: slotColor === 0xDC143C ? 0xDC143C : 0x000000,
-        emissiveIntensity: slotColor === 0xDC143C ? 0.2 : 0.05
+        emissiveIntensity: slotColor === 0xDC143C ? 0.2 : 0.05,
+        flatShading: false,
+        side: THREE.DoubleSide
       });
       
       const slot = new THREE.Mesh(slotGeometry, slotMaterial);
@@ -647,10 +649,11 @@ export class ThemeParkWheel {
       edgeShape.lineTo(0, 0);
       
       const edgeGeometry = new THREE.ExtrudeGeometry(edgeShape, {
-        depth: 0.08,
+        depth: 0.12,
         bevelEnabled: true,
-        bevelThickness: 0.02,
-        bevelSize: 0.02
+        bevelThickness: 0.04,
+        bevelSize: 0.04,
+        bevelSegments: 3
       });
       edgeGeometry.rotateX(-Math.PI / 2);
       edgeGeometry.translate(0, this.SLOT_DEPTH / 2, 0);
