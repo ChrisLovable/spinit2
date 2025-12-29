@@ -1973,16 +1973,18 @@ async function loadActiveCompetitions() {
     
     let competitions = [];
     
-    // Load from Supabase if available
+    // Load from Supabase if available - get ALL competitions, not just active status
     if (supabase) {
       const { data, error } = await supabase
         .from('competitions')
         .select('id, title, status')
-        .eq('status', 'active')
         .order('created_at', { ascending: false });
       
       if (!error && data) {
         competitions = data;
+        console.log(`📋 Found ${competitions.length} total competitions in database`);
+      } else if (error) {
+        console.error('Error loading competitions:', error);
       }
     } else {
       // Fallback: use localStorage prizeData as single competition
@@ -1998,16 +2000,16 @@ async function loadActiveCompetitions() {
     
     // Filter to only active competitions (not fully bought out)
     const activeCompetitions = [];
-    console.log(`📋 Found ${competitions.length} competitions with status 'active'`);
+    console.log(`📋 Processing ${competitions.length} competitions from database`);
     for (const comp of competitions) {
       const isActive = await isCompetitionActive(comp.id);
-      console.log(`  - Competition "${comp.title}" (${comp.id}): isActive=${isActive}`);
+      console.log(`  - Competition "${comp.title}" (${comp.id}): status=${comp.status}, isActive=${isActive}`);
       if (isActive) {
         activeCompetitions.push(comp);
       }
     }
     
-    console.log(`✅ Filtered to ${activeCompetitions.length} active competitions`);
+    console.log(`✅ Filtered to ${activeCompetitions.length} active competitions (not fully bought out)`);
     
     // Populate hidden select and custom dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
