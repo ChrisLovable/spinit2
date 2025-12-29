@@ -1823,9 +1823,11 @@ async function checkAndScheduleAutoSpin(competitionId) {
     if (supabase && competitionId && !competitionId.startsWith('temp_')) {
       const { data, error } = await supabase
         .from('user_entries')
-        .select('entry_number')
+        .select('entry_number, payment_completed_at, created_at')
         .eq('competition_id', competitionId)
-        .eq('payment_status', 'completed');
+        .eq('payment_status', 'completed')
+        .order('payment_completed_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false });
       
       if (!error && data) {
         entries = data;
@@ -1846,7 +1848,35 @@ async function checkAndScheduleAutoSpin(competitionId) {
     const isFullyBought = boughtNumbers.size >= 20;
     
     if (isFullyBought) {
+      // Check if auto-spin is already scheduled for this competition
+      const existingAutoSpin = localStorage.getItem('autoSpinDateTime');
+      const existingCompetitionId = localStorage.getItem('autoSpinCompetitionId');
+      
+      // Only schedule if not already scheduled for this competition
+      if (existingAutoSpin && existingCompetitionId === competitionId) {
+        const existingTime = new Date(existingAutoSpin);
+        if (existingTime > new Date()) {
+          console.log('⏰ Auto-spin already scheduled for this competition');
+          return;
+        }
+      }
+      
       console.log('✅ Competition fully bought out! Scheduling auto-spin in 10 minutes...');
+      
+      // Get the timestamp of the last ticket sold
+      let lastTicketTime = new Date();
+      if (entries.length > 0) {
+        // Find the most recent payment completion time
+        const lastEntry = entries[0];
+        if (lastEntry.payment_completed_at) {
+          lastTicketTime = new Date(lastEntry.payment_completed_at);
+        } else if (lastEntry.created_at) {
+          lastTicketTime = new Date(lastEntry.created_at);
+        }
+      }
+      
+      // Schedule spin for 10 minutes after the last ticket was sold
+      autoSpinDateTime = new Date(lastTicketTime.getTime() + 10 * 60 * 1000); // 10 minutes after last ticket
       
       // Update competition status to 'completed' in database
       if (supabase && competitionId && !competitionId.startsWith('temp_')) {
@@ -1874,15 +1904,14 @@ async function checkAndScheduleAutoSpin(competitionId) {
         clearTimeout(autoSpinTimer);
       }
       
-      // Schedule spin for 10 minutes from now
-      autoSpinDateTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-      
       // Persist the 10-minute timer so refresh doesn't kill it
       localStorage.setItem('autoSpinDateTime', autoSpinDateTime.toISOString());
+      localStorage.setItem('autoSpinCompetitionId', competitionId);
       
-      console.log('⏰ Starting 10-minute countdown. Auto-spin scheduled for:', autoSpinDateTime);
+      console.log('⏰ Last ticket sold at:', lastTicketTime);
+      console.log('⏰ Auto-spin scheduled for:', autoSpinDateTime);
       console.log('⏰ Current time:', new Date());
-      console.log('⏰ Time difference:', (autoSpinDateTime - new Date()) / 1000, 'seconds');
+      console.log('⏰ Time until spin:', (autoSpinDateTime - new Date()) / 1000, 'seconds');
       
       // Show countdown timer and wheel when last number is sold
       const countdownTimer = document.getElementById('countdownTimer');
@@ -1907,9 +1936,12 @@ async function checkAndScheduleAutoSpin(competitionId) {
       
       console.log('✅ Countdown started and should be visible');
       
+      // Calculate time remaining until auto-spin
+      const timeUntilSpin = Math.max(0, autoSpinDateTime - new Date());
+      
       // Set timer to auto-spin
       autoSpinTimer = setTimeout(() => {
-        console.log('🎰 Auto-spinning wheel (10 minutes after last payment)...');
+        console.log('🎰 Auto-spinning wheel (10 minutes after last ticket sold)...');
         if (!themeParkWheel.isSpinning) {
           // Pick random number for the spin
           const randomNumber = Math.floor(Math.random() * 20) + 1;
@@ -1917,8 +1949,9 @@ async function checkAndScheduleAutoSpin(competitionId) {
         }
         // Clear localStorage when spin happens
         localStorage.removeItem('autoSpinDateTime');
+        localStorage.removeItem('autoSpinCompetitionId');
         autoSpinDateTime = null;
-      }, 10 * 60 * 1000); // 10 minutes
+      }, timeUntilSpin);
     }
   } catch (error) {
     console.error('Error checking competition status:', error);
