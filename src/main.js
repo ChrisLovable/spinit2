@@ -2603,7 +2603,9 @@ function displayCompletedCompetitions(competitions) {
         <h3 class="completed-card-title">${comp.title || 'Competition'}</h3>
         <div class="completed-card-date">Spin Date: ${dateStr} @ ${timeStr}</div>
       </div>
-      ${comp.photo ? `<div class="completed-card-photo"><img src="${comp.photo}" alt="Prize" /></div>` : ''}
+      <div class="completed-card-photo">
+        ${comp.photo ? `<img src="${comp.photo}" alt="${comp.title || 'Prize'}" />` : '<div class="photo-placeholder">📷 No Image</div>'}
+      </div>
       <div class="completed-card-description">${comp.description || 'No description'}</div>
       <div class="completed-card-details">
         <div class="completed-card-value">Value: $${(comp.prize_value || 0).toFixed(2)}</div>
