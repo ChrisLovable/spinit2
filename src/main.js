@@ -2144,6 +2144,11 @@ function initializeCustomDropdown() {
         competitionSelectText.textContent = text;
       }
 
+      // Load and display competition details
+      if (value && value.trim() !== '') {
+        loadCompetitionDetails(value);
+      }
+
       // Update selected state
       competitionSelectDropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
         opt.classList.remove('selected');
