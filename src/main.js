@@ -2097,17 +2097,8 @@ function initializeCustomDropdown() {
 
   console.log('✅ Initializing custom dropdown functionality');
 
-  // Remove any existing listeners by cloning and replacing
-  const newButton = competitionSelectButton.cloneNode(true);
-  competitionSelectButton.parentNode.replaceChild(newButton, competitionSelectButton);
-  
-  // Get fresh reference after clone
-  const button = document.getElementById('competitionSelectButton');
-  const dropdown = document.getElementById('competitionSelectDropdown');
-  const textSpan = document.getElementById('competitionSelectText');
-
   // Toggle dropdown on button click
-  button.addEventListener('click', function(e) {
+  competitionSelectButton.onclick = function(e) {
     e.preventDefault();
     e.stopPropagation();
     console.log('🖱️ Dropdown button clicked!');
@@ -2119,10 +2110,21 @@ function initializeCustomDropdown() {
       customDropdown.classList.add('active');
       console.log('Dropdown opened');
     }
-  }, true); // Use capture phase
+    return false;
+  };
+
+  // Also add event listener as backup
+  competitionSelectButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('🖱️ Dropdown button clicked (listener)!');
+    customDropdown.classList.toggle('active');
+    console.log('Dropdown active:', customDropdown.classList.contains('active'));
+    return false;
+  }, true);
 
   // Handle option selection
-  dropdown.addEventListener('click', function(e) {
+  competitionSelectDropdown.onclick = function(e) {
     e.stopPropagation();
     const option = e.target.closest('.custom-dropdown-option');
     if (option) {
@@ -2138,12 +2140,12 @@ function initializeCustomDropdown() {
       }
 
       // Update button text
-      if (textSpan) {
-        textSpan.textContent = text;
+      if (competitionSelectText) {
+        competitionSelectText.textContent = text;
       }
 
       // Update selected state
-      dropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+      competitionSelectDropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
         opt.classList.remove('selected');
       });
       option.classList.add('selected');
@@ -2151,11 +2153,35 @@ function initializeCustomDropdown() {
       // Close dropdown
       customDropdown.classList.remove('active');
     }
-  }, true); // Use capture phase
+    return false;
+  };
+
+  // Also add event listener as backup
+  competitionSelectDropdown.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const option = e.target.closest('.custom-dropdown-option');
+    if (option) {
+      const value = option.getAttribute('data-value');
+      const text = option.textContent;
+      console.log('✅ Option selected (listener):', { value, text });
+      if (competitionSelect) {
+        competitionSelect.value = value;
+        competitionSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      if (competitionSelectText) {
+        competitionSelectText.textContent = text;
+      }
+      competitionSelectDropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      option.classList.add('selected');
+      customDropdown.classList.remove('active');
+    }
+  }, true);
 
   // Close dropdown when clicking outside
   const outsideClickHandler = function(e) {
-    if (!customDropdown.contains(e.target) && !button.contains(e.target)) {
+    if (!customDropdown.contains(e.target) && !competitionSelectButton.contains(e.target)) {
       customDropdown.classList.remove('active');
     }
   };
