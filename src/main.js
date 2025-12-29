@@ -1485,8 +1485,38 @@ adminForm.addEventListener('submit', async (e) => {
     // Wait longer to ensure database commit is complete
     console.log('🔄 Refreshing competitions dropdown after save...');
     console.log('📝 Saved competition ID:', competitionId);
+    console.log('📝 Saved competition title:', formData.title);
+    
+    // Wait for database to commit
     await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Force refresh the dropdown
     await loadActiveCompetitions();
+    
+    // Double-check: if the competition still isn't there, add it manually
+    if (competitionId) {
+      const competitionSelect = document.getElementById('competitionSelect');
+      if (competitionSelect) {
+        const existingOption = Array.from(competitionSelect.options).find(opt => opt.value === competitionId);
+        if (!existingOption && formData.title) {
+          console.log('⚠️ Competition not found in dropdown, adding manually...');
+          const option = document.createElement('option');
+          option.value = competitionId;
+          option.textContent = formData.title;
+          competitionSelect.appendChild(option);
+          // Sort options alphabetically
+          const options = Array.from(competitionSelect.options);
+          options.sort((a, b) => {
+            if (a.value === '') return 1;
+            if (b.value === '') return -1;
+            return a.textContent.localeCompare(b.textContent);
+          });
+          competitionSelect.innerHTML = '';
+          options.forEach(opt => competitionSelect.appendChild(opt));
+        }
+      }
+    }
+    
     console.log('✅ Competitions dropdown refreshed');
     
     // Show success message
