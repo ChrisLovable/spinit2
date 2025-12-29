@@ -1782,6 +1782,11 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
+// Hide canvas/wheel by default - only show when auto-spin is scheduled
+if (canvas) {
+  canvas.style.display = 'none';
+}
+
 // Restore scheduled auto-spin countdown (so refresh doesn't lose it)
 const savedAutoSpin = localStorage.getItem('autoSpinDateTime');
 if (savedAutoSpin) {
@@ -1789,7 +1794,7 @@ if (savedAutoSpin) {
   if (!isNaN(dt.getTime()) && dt > new Date()) {
     autoSpinDateTime = dt;
     
-    // Show countdown and wheel if auto-spin is scheduled
+    // Show countdown and wheel if auto-spin is scheduled (10 mins after last ticket)
     const countdownTimer = document.getElementById('countdownTimer');
     if (countdownTimer) {
       countdownTimer.style.display = 'flex';
