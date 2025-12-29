@@ -1776,13 +1776,19 @@ async function checkAndScheduleAutoSpin(competitionId) {
       console.log('⏰ Current time:', new Date());
       console.log('⏰ Time difference:', (autoSpinDateTime - new Date()) / 1000, 'seconds');
       
-      // Ensure countdown timer is visible
+      // Show countdown timer and wheel when last number is sold
       const countdownTimer = document.getElementById('countdownTimer');
       if (countdownTimer) {
-        countdownTimer.style.display = 'block';
+        countdownTimer.style.display = 'flex';
         console.log('✅ Countdown timer made visible');
       } else {
         console.error('❌ Countdown timer element not found!');
+      }
+      
+      // Show the wheel/canvas
+      if (canvas) {
+        canvas.style.display = 'block';
+        console.log('✅ Wheel/canvas made visible');
       }
       
       // Update countdown to show auto-spin time immediately

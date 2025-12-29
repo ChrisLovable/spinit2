@@ -95,7 +95,7 @@ body {
   z-index: 1;
   touch-action: pan-y; /* allow vertical scroll */
   overscroll-behavior: contain; /* prevents weird bounce/lock */
-  display: block;
+  display: none; /* Hidden by default, shown only when last number is sold */
 }
 
 /* Countdown Timer - Third */
@@ -116,7 +116,7 @@ body {
   z-index: 10;
   margin-top: 0; /* Moved up by 100px (was 100px) */
   margin-bottom: 0;
-  display: flex;
+  display: none; /* Hidden by default, shown only when last number is sold */
   flex-direction: column;
   justify-content: center;
   align-items: center;
