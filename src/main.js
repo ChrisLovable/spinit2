@@ -2199,6 +2199,18 @@ function initializeCustomDropdown() {
 
   dropdownInitialized = true;
   console.log('✅ Custom dropdown event listeners attached successfully');
+
+  // Set up change event listener for hidden select element
+  if (competitionSelect) {
+    competitionSelect.addEventListener('change', function(e) {
+      const selectedId = e.target.value;
+      if (selectedId && selectedId.trim() !== '') {
+        console.log('📥 Competition changed via select element:', selectedId);
+        loadCompetitionDetails(selectedId);
+      }
+    });
+    console.log('✅ Competition select change listener attached');
+  }
 }
 
 // Initialize dropdown after DOM is ready and competitions are loaded
@@ -2221,8 +2233,34 @@ async function loadCompetitionDetails(competitionId) {
   try {
     console.log('📥 Loading competition details for ID:', competitionId);
     
-    if (!supabase || !competitionId || competitionId.trim() === '') {
-      console.warn('⚠️ Cannot load competition details - Supabase not available or invalid ID');
+    if (!competitionId || competitionId.trim() === '') {
+      console.warn('⚠️ Cannot load competition details - invalid ID');
+      return;
+    }
+
+    if (!supabase) {
+      console.warn('⚠️ Cannot load competition details - Supabase not available');
+      // Try to load from localStorage as fallback
+      const allCompetitions = JSON.parse(localStorage.getItem('competitions') || '[]');
+      const competition = allCompetitions.find(c => c.id === competitionId);
+      if (competition) {
+        const competitionData = {
+          title: competition.title,
+          photo: competition.photo,
+          description: competition.description,
+          value: parseFloat(competition.prize_value) || 0,
+          price: parseFloat(competition.ticket_price) || 50,
+          spinDate: competition.spin_date,
+          spinTime: competition.spin_time,
+          spinDateTime: competition.spin_datetime,
+          competition_id: competition.id,
+          timestamp: competition.created_at
+        };
+        updatePrizeInfo(competitionData);
+        await updatePaidNamesDisplay();
+        displayAllPaidPlayers();
+        console.log('✅ Competition details loaded from localStorage');
+      }
       return;
     }
 
@@ -2259,6 +2297,8 @@ async function loadCompetitionDetails(competitionId) {
       timestamp: data.created_at
     };
 
+    console.log('🔄 Updating prize info with:', competitionData);
+
     // Update the UI
     updatePrizeInfo(competitionData);
 
@@ -2270,28 +2310,21 @@ async function loadCompetitionDetails(competitionId) {
     localStorage.setItem('prizeData', JSON.stringify(prizeData));
 
     // Update paid names display for this competition
+    console.log('🔄 Updating paid names display...');
     await updatePaidNamesDisplay();
 
     // Update paid players display
+    console.log('🔄 Updating paid players display...');
     displayAllPaidPlayers();
 
     console.log('✅ Competition details populated successfully');
   } catch (error) {
     console.error('❌ Error loading competition details:', error);
+    console.error('Error stack:', error.stack);
   }
 }
 
-// Also listen to hidden select change event as backup
-const competitionSelectElement = document.getElementById('competitionSelect');
-if (competitionSelectElement) {
-  competitionSelectElement.addEventListener('change', function(e) {
-    const selectedId = e.target.value;
-    if (selectedId && selectedId.trim() !== '') {
-      console.log('📥 Competition changed via select element:', selectedId);
-      loadCompetitionDetails(selectedId);
-    }
-  });
-}
+// Note: Competition select change listener is set up in initializeCustomDropdown()
 
 // Check if competition is active (not fully bought out)
 async function isCompetitionActive(competitionId) {
