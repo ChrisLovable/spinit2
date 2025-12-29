@@ -56,8 +56,8 @@ body {
 }
 
 .app-logo {
-  max-width: 540px;
   width: 100%;
+  max-width: 100%;
   height: auto;
   object-fit: contain;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
