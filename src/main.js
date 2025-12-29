@@ -1982,8 +1982,11 @@ function updateAutoSpinCountdown() {
   const diff = autoSpinDateTime - now;
   
   if (diff <= 0) {
-    console.log('⏰ Countdown expired, hiding timer');
+    console.log('⏰ Countdown expired, hiding timer and wheel');
     countdownTimer.style.display = 'none';
+    if (canvas) {
+      canvas.style.display = 'none';
+    }
     return;
   }
   
