@@ -2065,6 +2065,77 @@ async function loadActiveCompetitions() {
   }
 }
 
+// Initialize custom dropdown functionality
+function initializeCustomDropdown() {
+  const competitionSelectButton = document.getElementById('competitionSelectButton');
+  const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
+  const competitionSelectText = document.getElementById('competitionSelectText');
+  const customDropdown = document.querySelector('.custom-dropdown');
+  const competitionSelect = document.getElementById('competitionSelect');
+
+  if (!competitionSelectButton || !competitionSelectDropdown || !competitionSelectText || !customDropdown || !competitionSelect) {
+    console.warn('⚠️ Custom dropdown elements not found, retrying...');
+    setTimeout(initializeCustomDropdown, 500);
+    return;
+  }
+
+  console.log('✅ Initializing custom dropdown functionality');
+
+  // Toggle dropdown on button click
+  competitionSelectButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    customDropdown.classList.toggle('active');
+    console.log('Dropdown toggled, active:', customDropdown.classList.contains('active'));
+  });
+
+  // Handle option selection
+  competitionSelectDropdown.addEventListener('click', (e) => {
+    const option = e.target.closest('.custom-dropdown-option');
+    if (option) {
+      const value = option.getAttribute('data-value');
+      const text = option.textContent;
+
+      console.log('Option selected:', { value, text });
+
+      // Update hidden select
+      if (competitionSelect) {
+        competitionSelect.value = value;
+        competitionSelect.dispatchEvent(new Event('change'));
+      }
+
+      // Update button text
+      competitionSelectText.textContent = text;
+
+      // Update selected state
+      competitionSelectDropdown.querySelectorAll('.custom-dropdown-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      option.classList.add('selected');
+
+      // Close dropdown
+      customDropdown.classList.remove('active');
+    }
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!customDropdown.contains(e.target)) {
+      customDropdown.classList.remove('active');
+    }
+  });
+
+  console.log('✅ Custom dropdown event listeners attached');
+}
+
+// Initialize dropdown after DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(initializeCustomDropdown, 100);
+  });
+} else {
+  setTimeout(initializeCustomDropdown, 100);
+}
+
 // Check if competition is active (not fully bought out)
 async function isCompetitionActive(competitionId) {
   try {
