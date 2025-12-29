@@ -1779,6 +1779,36 @@ updatePaidNamesDisplay();
 // Load active competitions on page load
 loadActiveCompetitions();
 
+// Logo spin animation every 10 seconds
+function startLogoSpin() {
+  const logo = document.querySelector('.app-logo');
+  if (!logo) return;
+  
+  // Remove any existing spin class
+  logo.classList.remove('spinning');
+  
+  // Force reflow to restart animation
+  void logo.offsetWidth;
+  
+  // Add spin class
+  logo.classList.add('spinning');
+  
+  // Remove class after animation completes
+  setTimeout(() => {
+    logo.classList.remove('spinning');
+  }, 2000);
+}
+
+// Start logo spin every 10 seconds
+setInterval(() => {
+  startLogoSpin();
+}, 10000);
+
+// Initial spin after page load
+setTimeout(() => {
+  startLogoSpin();
+}, 1000);
+
 // Restore scheduled auto-spin countdown (so refresh doesn't lose it)
 const savedAutoSpin = localStorage.getItem('autoSpinDateTime');
 if (savedAutoSpin) {
