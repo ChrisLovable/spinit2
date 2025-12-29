@@ -1522,14 +1522,29 @@ adminForm.addEventListener('submit', async (e) => {
     // Double-check: if the competition still isn't there, add it manually
     if (competitionId) {
       const competitionSelect = document.getElementById('competitionSelect');
+      const competitionSelectDropdown = document.getElementById('competitionSelectDropdown');
+      const competitionSelectText = document.getElementById('competitionSelectText');
+      
       if (competitionSelect) {
         const existingOption = Array.from(competitionSelect.options).find(opt => opt.value === competitionId);
         if (!existingOption && formData.title) {
           console.log('⚠️ Competition not found in dropdown, adding manually...');
+          
+          // Add to hidden select
           const option = document.createElement('option');
           option.value = competitionId;
           option.textContent = formData.title;
           competitionSelect.appendChild(option);
+          
+          // Add to custom dropdown
+          if (competitionSelectDropdown) {
+            const customOption = document.createElement('div');
+            customOption.className = 'custom-dropdown-option';
+            customOption.setAttribute('data-value', competitionId);
+            customOption.textContent = formData.title;
+            competitionSelectDropdown.appendChild(customOption);
+          }
+          
           // Sort options alphabetically
           const options = Array.from(competitionSelect.options);
           options.sort((a, b) => {
@@ -1539,6 +1554,25 @@ adminForm.addEventListener('submit', async (e) => {
           });
           competitionSelect.innerHTML = '';
           options.forEach(opt => competitionSelect.appendChild(opt));
+          
+          // Rebuild custom dropdown to match
+          if (competitionSelectDropdown) {
+            competitionSelectDropdown.innerHTML = '';
+            options.forEach(opt => {
+              if (opt.value) {
+                const customOption = document.createElement('div');
+                customOption.className = 'custom-dropdown-option';
+                customOption.setAttribute('data-value', opt.value);
+                customOption.textContent = opt.textContent;
+                competitionSelectDropdown.appendChild(customOption);
+              }
+            });
+          }
+          
+          // Update button text
+          if (competitionSelectText) {
+            competitionSelectText.textContent = formData.title;
+          }
         }
       }
     }
