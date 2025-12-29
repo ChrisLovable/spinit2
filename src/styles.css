@@ -206,7 +206,7 @@ body {
   border: 2px solid rgba(255, 215, 0, 0.3);
   user-select: none; /* Prevent text selection while dragging */
   touch-action: pan-y; /* Allow scrolling */
-  margin-top: 0; /* Moved up by 100px (was 100px) */
+  margin-top: 20px;
   margin-bottom: 0;
 }
 
