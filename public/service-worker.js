@@ -5,7 +5,7 @@ const urlsToCache = [
   '/src/main.js',
   '/src/styles.css',
   '/src/RouletteWheel.js',
-  '/SPINITLOGO.png',
+  '/SPINITLOGO.jpg',
   '/manifest.json'
 ];
 
