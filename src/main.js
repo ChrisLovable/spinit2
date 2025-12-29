@@ -2092,15 +2092,17 @@ async function loadActiveCompetitions() {
     
     let competitions = [];
     
-    // Load from Supabase if available - get ALL competitions, not just active status
+    // Load from Supabase if available - get ALL competitions (active + NULL status), exclude only completed
     console.log('🔍 Checking Supabase connection...', { supabase: !!supabase });
     
     if (supabase) {
       console.log('✅ Supabase client exists, querying database...');
       try {
+        // Get competitions with status = 'active' OR status = NULL (exclude only 'completed')
         const { data, error } = await supabase
           .from('competitions')
           .select('id, title, status')
+          .or('status.eq.active,status.is.null')
           .order('created_at', { ascending: false });
         
         console.log('📊 Database query result:', { data, error });
@@ -2110,7 +2112,7 @@ async function loadActiveCompetitions() {
           alert(`Error loading competitions: ${error.message}`);
         } else if (data) {
           competitions = data;
-          console.log(`✅ Found ${competitions.length} total competitions in database:`, competitions);
+          console.log(`✅ Found ${competitions.length} competitions (active + NULL status) in database:`, competitions);
         } else {
           console.warn('⚠️ No data returned from Supabase query');
         }
@@ -2132,9 +2134,22 @@ async function loadActiveCompetitions() {
       }
     }
     
-    // Use ALL competitions from database - no filtering
-    const allCompetitions = competitions;
-    console.log(`📋 Loading ${allCompetitions.length} competitions from database into dropdown`);
+    // Filter to only active competitions (not fully bought out - haven't sold all 20 tickets)
+    const activeCompetitions = [];
+    console.log(`📋 Processing ${competitions.length} competitions from database`);
+    for (const comp of competitions) {
+      const isActive = await isCompetitionActive(comp.id);
+      console.log(`  - Competition "${comp.title}" (${comp.id}): status=${comp.status}, isActive=${isActive} (not fully bought out)`);
+      if (isActive) {
+        activeCompetitions.push(comp);
+      }
+    }
+    
+    console.log(`✅ Filtered to ${activeCompetitions.length} active competitions (not fully bought out)`);
+    
+    // Use filtered active competitions
+    const allCompetitions = activeCompetitions;
+    console.log(`📋 Loading ${allCompetitions.length} active competitions into dropdown`);
     
     // Populate hidden select and custom dropdown - sorted by title alphabetically
     competitionSelect.innerHTML = '';
