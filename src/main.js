@@ -1780,13 +1780,23 @@ loadAndDisplayPaidPlayers();
 updatePaidNamesDisplay();
 
 // Load active competitions on page load - wait for DOM to be ready
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => loadActiveCompetitions(), 500);
-  });
-} else {
-  setTimeout(() => loadActiveCompetitions(), 500);
+function initializeActiveCompetitions() {
+  console.log('🚀 Initializing active competitions...');
+  console.log('📊 Document ready state:', document.readyState);
+  
+  if (document.readyState === 'loading') {
+    console.log('⏳ Waiting for DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('✅ DOMContentLoaded fired, loading competitions...');
+      setTimeout(() => loadActiveCompetitions(), 1000);
+    });
+  } else {
+    console.log('✅ DOM already ready, loading competitions...');
+    setTimeout(() => loadActiveCompetitions(), 1000);
+  }
 }
+
+initializeActiveCompetitions();
 
 // Show canvas/wheel by default
 if (canvas) {
@@ -2142,12 +2152,25 @@ async function loadActiveCompetitions() {
         const firstComp = activeCompetitions[0];
         competitionSelect.value = firstComp.id;
         competitionSelectText.textContent = firstComp.title;
+        console.log(`✅ Set default selection to: ${firstComp.title}`);
       }
     }
     
     console.log(`✅ Loaded ${activeCompetitions.length} active competitions into dropdown (excluded ${competitions.length - activeCompetitions.length} with all tickets sold)`);
+    
+    // Re-initialize custom dropdown after loading competitions
+    setTimeout(() => {
+      initializeCustomDropdown();
+    }, 100);
   } catch (error) {
-    console.error('Error loading competitions:', error);
+    console.error('❌ Error loading competitions:', error);
+    console.error('Error stack:', error.stack);
+    
+    // Show error in dropdown
+    const competitionSelectText = document.getElementById('competitionSelectText');
+    if (competitionSelectText) {
+      competitionSelectText.textContent = 'Error loading competitions';
+    }
   }
 }
 
