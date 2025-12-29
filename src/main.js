@@ -2181,6 +2181,11 @@ function initializeCustomDropdown() {
       });
       option.classList.add('selected');
       customDropdown.classList.remove('active');
+
+      // Load and display competition details
+      if (value && value.trim() !== '') {
+        loadCompetitionDetails(value);
+      }
     }
   }, true);
 
@@ -2209,6 +2214,83 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', setupDropdownAfterLoad);
 } else {
   setupDropdownAfterLoad();
+}
+
+// Load competition details when selected
+async function loadCompetitionDetails(competitionId) {
+  try {
+    console.log('📥 Loading competition details for ID:', competitionId);
+    
+    if (!supabase || !competitionId || competitionId.trim() === '') {
+      console.warn('⚠️ Cannot load competition details - Supabase not available or invalid ID');
+      return;
+    }
+
+    // Fetch full competition details from database
+    const { data, error } = await supabase
+      .from('competitions')
+      .select('*')
+      .eq('id', competitionId)
+      .single();
+
+    if (error) {
+      console.error('❌ Error loading competition details:', error);
+      return;
+    }
+
+    if (!data) {
+      console.warn('⚠️ Competition not found in database');
+      return;
+    }
+
+    console.log('✅ Competition details loaded:', data);
+
+    // Update prize info with competition data
+    const competitionData = {
+      title: data.title,
+      photo: data.photo,
+      description: data.description,
+      value: parseFloat(data.prize_value) || 0,
+      price: parseFloat(data.ticket_price) || 50,
+      spinDate: data.spin_date,
+      spinTime: data.spin_time,
+      spinDateTime: data.spin_datetime,
+      competition_id: data.id,
+      timestamp: data.created_at
+    };
+
+    // Update the UI
+    updatePrizeInfo(competitionData);
+
+    // Update localStorage with selected competition
+    const prizeData = {
+      ...competitionData,
+      competition_id: competitionId
+    };
+    localStorage.setItem('prizeData', JSON.stringify(prizeData));
+
+    // Update paid names display for this competition
+    await updatePaidNamesDisplay();
+
+    // Update paid players display
+    displayAllPaidPlayers();
+
+    console.log('✅ Competition details populated successfully');
+  } catch (error) {
+    console.error('❌ Error loading competition details:', error);
+  }
+}
+
+// Also listen to hidden select change event as backup
+const competitionSelectElement = document.getElementById('competitionSelect');
+if (competitionSelectElement) {
+  competitionSelectElement.addEventListener('change', function(e) {
+    const selectedId = e.target.value;
+    if (selectedId && selectedId.trim() !== '') {
+      console.log('📥 Competition changed via select element:', selectedId);
+      loadCompetitionDetails(selectedId);
+    }
+  });
 }
 
 // Check if competition is active (not fully bought out)
